@@ -2,7 +2,6 @@ package com.example.levelup.ui.screens.login
 
 import androidx.compose.runtime.Composable
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
