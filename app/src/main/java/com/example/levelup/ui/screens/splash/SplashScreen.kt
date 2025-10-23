@@ -14,7 +14,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import com.example.levelup.R
-
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun SplashSplash() {
@@ -49,7 +50,9 @@ fun SplashSplash() {
 
     // --- UI del Splash ---
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
         contentAlignment = Alignment.Center
     ) {
         Image(
