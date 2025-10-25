@@ -17,8 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import com.example.levelup.navegation.AppNavegacion
-import com.example.levelup.ui.screens.login.LoginScreen
+import com.example.levelup.navigation.AppNavegacion
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

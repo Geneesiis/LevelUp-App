@@ -15,12 +15,13 @@ class AuthRepository {
             when {
                 correo == "admin@levelup.cl" -> {
                     val resultado = auth.signInWithEmailAndPassword(correo, clave).await()
-                    User (
+                    User(
                         correo = correo,
                         nombre = "Administrador",
                         rol = "admin"
                     )
                 }
+
                 else -> {
                     loginWithFirestore(correo, clave)
                 }
