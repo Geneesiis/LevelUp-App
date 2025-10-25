@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.foundation)
+    implementation(libs.androidx.navigation.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -86,4 +87,7 @@ dependencies {
 
     //ViewModel - Lifecycle - Compose
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+
+    //Navegation Compose
+    implementation("androidx.navigation:navigation-compose:2.8.4")
 }

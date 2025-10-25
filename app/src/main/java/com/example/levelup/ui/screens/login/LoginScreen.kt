@@ -21,16 +21,23 @@ import androidx.compose.ui.text.font.FontWeight
 import com.example.levelup.R
 
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.levelup.repository.AuthRepository
 import com.example.levelup.viewmodel.LoginViewModel
 
 @Composable
-fun LoginScreen(){ //Función de inicio sesión
+fun LoginScreen(
+    onRegisterClick: () -> Unit = {},
+    onLoginSuccess: (User: com.example.levelup.model.User) -> Unit = {}
+){ //Función de inicio sesión
     val context = LocalContext.current
     var correo by remember { mutableStateOf("") }
     val viewModel: LoginViewModel = viewModel ()
     val user by viewModel.user.collectAsState()
     val carga by viewModel.cargaLogin.collectAsState()
     var pass by remember { mutableStateOf("") }
+
+    //Variable de conexión al Auth
+    val repositorio = AuthRepository()
 
     LaunchedEffect(key1 = user) {
         user?.let {
@@ -39,6 +46,7 @@ fun LoginScreen(){ //Función de inicio sesión
                 else -> "Bienvenido: ${it.nombre}"
             }
             Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show()
+            onLoginSuccess(it)
         }
     }
 
@@ -144,33 +152,44 @@ fun LoginScreen(){ //Función de inicio sesión
                     .height(54.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF00FFAA),
-                    contentColor = Color.Black
+                    contentColor = Color.Black,
+                    disabledContainerColor = Color(0xFF00FFAA),
+                    disabledContentColor = Color.Black
                 ),
                 elevation = ButtonDefaults.buttonElevation(
                     defaultElevation = 8.dp,
                     pressedElevation = 4.dp
-                )
-            ) {
+                ),
+                enabled = !carga
+            )
+            {
                 if (carga) {
-                    CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White)
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.Gray,
+                        strokeWidth = 3.dp
+                    )
                 } else {
                 Text(
                     "INGRESAR",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Black
                     )
-                )}
+                )
+                }
             }
 
-            // Enlace adicional (opcional)
             Spacer(Modifier.height(16.dp))
-            Text(
-                "¿No tienes cuenta? Regístrate aquí",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = Color(0xFF888888),
-                    fontWeight = FontWeight.Medium
+
+            TextButton(onClick = onRegisterClick) {
+                Text(
+                    "¿No tienes cuenta? Regístrate aquí",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = Color(0xFF888888),
+                        fontWeight = FontWeight.Medium
+                    )
                 )
-            )
+            }
         }
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import com.example.levelup.navegation.AppNavegacion
 import com.example.levelup.ui.screens.login.LoginScreen
 
 class MainActivity : ComponentActivity() {
@@ -43,7 +44,8 @@ fun MyApp(){
             if (!showLogin){
                 SplashSplash()
             } else {
-                LoginScreen()
+                //LoginScreen()
+                AppNavegacion()
             }
         }
     }
