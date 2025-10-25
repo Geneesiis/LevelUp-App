@@ -20,11 +20,27 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import com.example.levelup.R
 
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.levelup.viewmodel.LoginViewModel
+
 @Composable
 fun LoginScreen(){ //Función de inicio sesión
     val context = LocalContext.current
-    var user by remember { mutableStateOf("") }
+    var correo by remember { mutableStateOf("") }
+    val viewModel: LoginViewModel = viewModel ()
+    val user by viewModel.user.collectAsState()
+    val carga by viewModel.cargaLogin.collectAsState()
     var pass by remember { mutableStateOf("") }
+
+    LaunchedEffect(key1 = user) {
+        user?.let {
+            val mensaje = when (it.rol) {
+                "admin" -> "Bienvenido Admin: ${it.nombre}"
+                else -> "Bienvenido: ${it.nombre}"
+            }
+            Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -53,15 +69,15 @@ fun LoginScreen(){ //Función de inicio sesión
                 )
             )
 
-            Spacer(Modifier.height(32.dp))
-
             // Campo USUARIO
+            Spacer(Modifier.height(16.dp))
+
             OutlinedTextField(
-                value = user,
-                onValueChange = { user = it },
+                value = correo,
+                onValueChange = { correo = it },
                 label = {
                     Text(
-                        "USUARIO",
+                        "CORREO",
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.SemiBold,
                             color = Color(0xFF00FFAA) // Label verde
@@ -117,26 +133,33 @@ fun LoginScreen(){ //Función de inicio sesión
             // Botón INGRESAR
             Button(
                 onClick = {
-                    Toast.makeText(context, "Bienvenido $user", Toast.LENGTH_SHORT).show()
+                    if (correo.isEmpty() || pass.isEmpty()) {
+                        Toast.makeText(context, "Completar todos los datos", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    viewModel.login(correo, pass)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF00FFAA), // Fondo verde
-                    contentColor = Color.Black // Texto negro para contraste
+                    containerColor = Color(0xFF00FFAA),
+                    contentColor = Color.Black
                 ),
                 elevation = ButtonDefaults.buttonElevation(
                     defaultElevation = 8.dp,
                     pressedElevation = 4.dp
                 )
             ) {
+                if (carga) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White)
+                } else {
                 Text(
                     "INGRESAR",
                     style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Black // Más impacto
+                        fontWeight = FontWeight.Black
                     )
-                )
+                )}
             }
 
             // Enlace adicional (opcional)

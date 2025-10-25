@@ -50,7 +50,7 @@ android {
 
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0, LGPL.2.1"
+            excludes += "/META-INF/{AL2.0, LGPL2.1}"
         }
     }
 }
@@ -74,10 +74,16 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    //Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-crashlytics-ktx")
+
+    //Kotlin-Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
+
+    //ViewModel - Lifecycle - Compose
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 }
