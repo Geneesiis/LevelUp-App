@@ -1,5 +1,6 @@
 package com.example.levelup.navigation
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -15,6 +16,8 @@ import com.example.levelup.ui.screens.perfil.PerfilAdminScreen
 import com.example.levelup.ui.screens.perfil.PerfilClienteScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.levelup.viewmodel.CarritoViewModel
+import com.example.levelup.ui.screens.catalogo.DetalleProductoScreen
+import androidx.compose.runtime.collectAsState
 
 @Composable
 fun AppNavegacion() {
@@ -45,6 +48,28 @@ fun AppNavegacion() {
             )
         }
 
+        composable(
+            "detalle_producto/{productoId}",
+            arguments = listOf(navArgument("productoId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val productoId = backStackEntry.arguments?.getString("productoId") ?: ""
+            val producto = carritoViewModel.productos.collectAsState().value.find { it.id == productoId }
+
+            if (producto != null) {
+                DetalleProductoScreen(
+                    producto = producto,
+                    onVolverAlCatalogo = { navController.popBackStack() },
+                    onAgregarAlCarrito = {
+                        carritoViewModel.agregarAlCarrito(producto)
+                        // Opcional: mostrar mensaje de confirmación
+                    }
+                )
+            } else {
+                // Manejar error si el producto no se encuentra
+                Text("Producto no encontrado")
+            }
+        }
+
         //Registro
         composable("register") {
             RegistroScreen(
@@ -63,6 +88,7 @@ fun AppNavegacion() {
             val nombre = backStackEntry.arguments?.getString("nombre") ?: "Cliente"
             CatalogoScreen(
                 viewModel = carritoViewModel,
+                navController = navController,
                 onVerCarrito = {
                     navController.navigate("carrito/$nombre")
                 },

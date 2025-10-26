@@ -27,7 +27,8 @@ class ProductoRepository {
                     nombre = document.getString("nombre") ?: "",
                     precio = document.getDouble("precio") ?: 0.0,
                     imagen = document.getString("imagen") ?: "",
-                    stock = document.getLong("stock")?.toInt() ?: 0
+                    stock = document.getLong("stock")?.toInt() ?: 0,
+                    descripcion = document.getString("descripcion") ?: "Sin descripción disponible"
                 )
             }
 

@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.levelup.viewmodel.CarritoViewModel
 import java.text.NumberFormat
@@ -26,6 +26,7 @@ import java.util.*
 @Composable
 fun CatalogoScreen(
     viewModel: CarritoViewModel,
+    navController: NavController,
     onVerCarrito: () -> Unit = {},
     onVerPerfil: () -> Unit = {},
     onConfirmarPago: () -> Unit = {}
@@ -43,7 +44,7 @@ fun CatalogoScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(
-                    top = 24.dp, // Espacio para la barra de notificaciones
+                    top = 30.dp, // Espacio para la barra de notificaciones
                     start = 16.dp,
                     end = 16.dp,
                     bottom = 16.dp
@@ -138,7 +139,10 @@ fun CatalogoScreen(
                                 producto = producto,
                                 onAgregar = { viewModel.agregarAlCarrito(producto) },
                                 onEliminar = { viewModel.removerDelCarrito(producto) },
-                                cantidadEnCarrito = carrito.find { it.producto.id == producto.id }?.cantidad ?: 0
+                                cantidadEnCarrito = carrito.find { it.producto.id == producto.id }?.cantidad ?: 0,
+                                onVerDetalle = {
+                                    navController.navigate("detalle_producto/${producto.id}")
+                                }
                             )
                         }
                     }
@@ -153,7 +157,8 @@ fun ProductoItem(
     producto: com.example.levelup.model.Producto,
     onAgregar: () -> Unit,
     onEliminar: () -> Unit,
-    cantidadEnCarrito: Int
+    cantidadEnCarrito: Int,
+    onVerDetalle: () -> Unit = {}
 ) {
     // Calcular stock disponible
     val stockDisponible = producto.stock - cantidadEnCarrito
@@ -163,7 +168,8 @@ fun ProductoItem(
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF111111)
         ),
-        elevation = CardDefaults.cardElevation(4.dp)
+        elevation = CardDefaults.cardElevation(4.dp),
+        onClick = onVerDetalle
     ) {
         Row(
             modifier = Modifier
