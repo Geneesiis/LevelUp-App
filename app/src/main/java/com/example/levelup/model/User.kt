@@ -1,8 +1,8 @@
 package com.example.levelup.model
 
-data class User (
+data class User(
+    val uid: String = "",
     val correo: String = "",
-    val clave: String = "",
     val nombre: String = "",
-    val rol: String = "" // Varible que dice si es admin o cliente
+    val rol: String = ""
 )

@@ -13,10 +13,13 @@ import com.example.levelup.ui.screens.pago.PagoConfirmacionScreen
 import com.example.levelup.ui.screens.registro.RegistroScreen
 import com.example.levelup.ui.screens.perfil.PerfilAdminScreen
 import com.example.levelup.ui.screens.perfil.PerfilClienteScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.levelup.viewmodel.CarritoViewModel
 
 @Composable
 fun AppNavegacion() {
     val navController = rememberNavController()
+    val carritoViewModel: CarritoViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -32,10 +35,10 @@ fun AppNavegacion() {
                     // Navegar según el rol pasando el nombre como parámetro
                     when (user.rol) {
                         "admin" -> navController.navigate("perfil_admin/${user.nombre}") {
-                            popUpTo("login") {inclusive=true}
+                            popUpTo("login") { inclusive = true }
                         }
                         else -> navController.navigate("catalogo/${user.nombre}") {
-                            popUpTo("login") {inclusive=true}
+                            popUpTo("login") { inclusive = true }
                         }
                     }
                 }
@@ -53,12 +56,13 @@ fun AppNavegacion() {
         }
 
         //Catálogo (pantalla principal para clientes)
-        composable (
+        composable(
             "catalogo/{nombre}",
-            arguments = listOf(navArgument("nombre") {type = NavType.StringType})
-        ) {backStackEntry ->
+            arguments = listOf(navArgument("nombre") { type = NavType.StringType })
+        ) { backStackEntry ->
             val nombre = backStackEntry.arguments?.getString("nombre") ?: "Cliente"
-            CatalogoScreen (
+            CatalogoScreen(
+                viewModel = carritoViewModel,
                 onVerCarrito = {
                     navController.navigate("carrito/$nombre")
                 },
@@ -69,12 +73,13 @@ fun AppNavegacion() {
         }
 
         //Carrito
-        composable (
+        composable(
             "carrito/{nombre}",
-            arguments = listOf(navArgument("nombre") {type= NavType.StringType})
-        ){  backStackEntry ->
+            arguments = listOf(navArgument("nombre") { type = NavType.StringType })
+        ) { backStackEntry ->
             val nombre = backStackEntry.arguments?.getString("nombre") ?: "Cliente"
             CarritoScreen(
+                viewModel = carritoViewModel,
                 onVolverAlCatalogo = {
                     navController.popBackStack()
                 },
@@ -85,35 +90,35 @@ fun AppNavegacion() {
         }
 
         //Pago/Confirmación
-        composable (
+        composable(
             "pago/{nombre}",
-            arguments = listOf(navArgument("nombre") {type = NavType.StringType})
+            arguments = listOf(navArgument("nombre") { type = NavType.StringType })
         ) { backStackEntry ->
             val nombre = backStackEntry.arguments?.getString("nombre") ?: "Cliente"
-            PagoConfirmacionScreen (
+            PagoConfirmacionScreen(
                 nombreUsuario = nombre,
                 onVolverAlPerfil = {
                     navController.navigate("catalogo/$nombre") {
-                        popUpTo("catalogo/$nombre") {inclusive=true}
+                        popUpTo("catalogo/$nombre") { inclusive = true }
                     }
                 }
             )
         }
 
         //Perfil Cliente
-        composable (
+        composable(
             "perfil_cliente/{nombre}",
-            arguments = listOf(navArgument("nombre") {type= NavType.StringType})
+            arguments = listOf(navArgument("nombre") { type = NavType.StringType })
         ) { backStackEntry ->
             val nombre = backStackEntry.arguments?.getString("nombre") ?: "Cliente"
-            PerfilClienteScreen (
+            PerfilClienteScreen(
                 nombre = nombre,
                 onBack = {
                     navController.popBackStack()
                 },
                 onLogout = {
                     navController.navigate("login") {
-                        popUpTo(0) {inclusive=true}
+                        popUpTo(0) { inclusive = true }
                     }
                 }
             )
@@ -130,7 +135,7 @@ fun AppNavegacion() {
                 onLogout = {
                     // Volver al login limpiando el back stack
                     navController.navigate("login") {
-                        popUpTo(0) { inclusive = true}
+                        popUpTo(0) { inclusive = true }
                     }
                 }
             )

@@ -62,7 +62,11 @@ fun RegistroScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp)
+                .padding(
+                    top = 32.dp,
+                    start = 24.dp,
+                    end = 24.dp,
+                    bottom = 24.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally

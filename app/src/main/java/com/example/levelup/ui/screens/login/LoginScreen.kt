@@ -31,22 +31,41 @@ fun LoginScreen(
 ){ //Función de inicio sesión
     val context = LocalContext.current
     var correo by remember { mutableStateOf("") }
-    val viewModel: LoginViewModel = viewModel ()
+    var pass by remember { mutableStateOf("") }
+
+    val viewModel: LoginViewModel = viewModel()
     val user by viewModel.user.collectAsState()
     val carga by viewModel.cargaLogin.collectAsState()
-    var pass by remember { mutableStateOf("") }
+    val error by viewModel.error.collectAsState()
 
     //Variable de conexión al Auth
     val repositorio = AuthRepository()
 
     LaunchedEffect(key1 = user) {
-        user?.let {
-            val mensaje = when (it.rol) {
-                "admin" -> "Bienvenido Admin: ${it.nombre}"
-                else -> "Bienvenido: ${it.nombre}"
+        if (user != null) {
+            val mensaje = when (user?.rol) {
+                "admin" -> "Bienvenido Admin: ${user?.nombre}"
+                else -> "Bienvenido: ${user?.nombre}"
             }
             Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show()
-            onLoginSuccess(it)
+            onLoginSuccess(user!!)
+        }
+    }
+
+    LaunchedEffect(key1 = error) {
+        error?.let { errorMessage ->
+            if (errorMessage.isNotEmpty()) {
+                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    var showEmptyFieldsError by remember { mutableStateOf(false) }
+
+    LaunchedEffect(key1 = showEmptyFieldsError) {
+        if (showEmptyFieldsError) {
+            Toast.makeText(context, "Completa todos los campos", Toast.LENGTH_SHORT).show()
+            showEmptyFieldsError = false
         }
     }
 
@@ -58,7 +77,11 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(
+                    top = 32.dp,
+                    start = 24.dp,
+                    end = 24.dp,
+                    bottom = 24.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ){

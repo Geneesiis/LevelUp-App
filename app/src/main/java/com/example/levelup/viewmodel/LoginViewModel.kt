@@ -15,6 +15,8 @@ class LoginViewModel : ViewModel() {
 
     private val _cargaLogin = MutableStateFlow(false)
     val cargaLogin: StateFlow<Boolean> = _cargaLogin
+    private val _error = MutableStateFlow<String?>(null)
+    var error: StateFlow<String?> = _error
 
     fun login (correo: String, clave: String) {
         _cargaLogin.value = true
