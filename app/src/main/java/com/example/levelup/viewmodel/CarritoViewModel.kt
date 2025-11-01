@@ -41,40 +41,43 @@ class CarritoViewModel : ViewModel() {
 
     fun agregarAlCarrito(producto: Producto) {
         // Verificar si hay stock disponible
-        val productoEnCatalogo = _productos.value.find { it.id == producto.id }
+        val productoEnCatalogo = _productos.value.find { it.id == producto.id } ?: return
         val cantidadEnCarrito = _carrito.value.find { it.producto.id == producto.id }?.cantidad ?: 0
 
-        if (productoEnCatalogo != null && cantidadEnCarrito < productoEnCatalogo.stock) {
-            val carritoActual = _carrito.value.toMutableList()
-            val itemExistente = carritoActual.find { it.producto.id == producto.id }
-
-            if (itemExistente != null) {
-                itemExistente.cantidad++
-            } else {
-                carritoActual.add(ItemCarrito(producto = producto, cantidad = 1))
-            }
-            _carrito.value = carritoActual
+        if (cantidadEnCarrito < productoEnCatalogo.stock) {
+            _carrito.value = _carrito.value.find { it.producto.id == producto.id }?.let {
+                // Actualizar cantidad existente
+                _carrito.value.map { item ->
+                    if (item.producto.id == producto.id) {
+                        item.copy(cantidad = item.cantidad + 1)
+                    } else {
+                        item
+                    }
+                }
+            } ?: (_carrito.value + ItemCarrito(producto = producto, cantidad = 1))
         }
     }
 
     fun removerDelCarrito(producto: Producto) {
-        val carritoActual = _carrito.value.toMutableList()
-        val itemExistente = carritoActual.find { it.producto.id == producto.id }
+        val itemExistente = _carrito.value.find { it.producto.id == producto.id } ?: return
 
-        if (itemExistente != null) {
-            if (itemExistente.cantidad > 1) {
-                itemExistente.cantidad--
-            } else {
-                carritoActual.remove(itemExistente)
+        _carrito.value = if (itemExistente.cantidad > 1) {
+            // Decrementar cantidad
+            _carrito.value.map { item ->
+                if (item.producto.id == producto.id) {
+                    item.copy(cantidad = item.cantidad - 1)
+                } else {
+                    item
+                }
             }
-            _carrito.value = carritoActual
+        } else {
+            // Eliminar item de la lista
+            _carrito.value.filter { it.producto.id != producto.id }
         }
     }
 
     fun eliminarProductoDelCarrito(producto: Producto) {
-        val carritoActual = _carrito.value.toMutableList()
-        carritoActual.removeAll { it.producto.id == producto.id }
-        _carrito.value = carritoActual
+        _carrito.value = _carrito.value.filter { it.producto.id != producto.id }
     }
 
     fun vaciarCarrito() {

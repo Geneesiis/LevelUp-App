@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.levelup.model.Producto
+import com.example.levelup.ui.screens.catalogo.utils.FormatUtils.formatPrecioCLP
 import java.text.NumberFormat
 import java.util.*
 
