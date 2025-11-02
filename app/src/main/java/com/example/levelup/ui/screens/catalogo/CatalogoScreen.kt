@@ -4,11 +4,9 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -27,6 +25,7 @@ import androidx.navigation.NavController
 import com.example.levelup.viewmodel.CarritoViewModel
 import com.example.levelup.ui.screens.catalogo.components.ProductoCard
 import com.example.levelup.ui.screens.catalogo.models.ProductoUiModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,24 +34,14 @@ fun CatalogoScreen(
     navController: NavController,
     onVerCarrito: () -> Unit = {},
     onVerPerfil: () -> Unit = {},
-    onConfirmarPago: () -> Unit = {}
+    onVerDeseados: () -> Unit = {},
+    onToggleDrawer: () -> Unit = {}
 ) {
-    val productos by viewModel.productos.collectAsState()
+    val productos by viewModel.productosFiltrados.collectAsState()
     val cargando by viewModel.cargando.collectAsState()
     val carrito by viewModel.carrito.collectAsState()
-
-    // Categorías disponibles
-    var categoriaSeleccionada by remember { mutableStateOf("TODOS") }
-    val categorias = listOf("TODOS", "CONSOLAS", "ACCESORIOS", "JUEGOS", "PC GAMING")
-
-    // Filtrar productos por categoría
-    val productosFiltrados = remember(productos, categoriaSeleccionada) {
-        if (categoriaSeleccionada == "TODOS") {
-            productos
-        } else {
-            productos
-        }
-    }
+    val deseados by viewModel.deseados.collectAsState()
+    val textoBusqueda by viewModel.textoBusqueda.collectAsState()
 
     // Animación de pulsación para efectos
     val infiniteTransition = rememberInfiniteTransition(label = "background")
@@ -122,44 +111,73 @@ fun CatalogoScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                // Botón de menú
+                                Surface(
+                                    modifier = Modifier.size(40.dp),
+                                    shape = CircleShape,
+                                    color = Color(0xFF1A1A1A),
+                                    onClick = onToggleDrawer
                                 ) {
-                                    // Icono decorativo
-                                    Surface(
-                                        shape = CircleShape,
-                                        color = Color(0xFF00FFAA).copy(alpha = 0.2f),
-                                        modifier = Modifier.size(32.dp)
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.border(
+                                            1.dp,
+                                            Color(0xFF00FFAA).copy(alpha = 0.4f),
+                                            CircleShape
+                                        )
                                     ) {
-                                        Box(contentAlignment = Alignment.Center) {
-                                            Icon(
-                                                Icons.Default.Star,
-                                                contentDescription = null,
-                                                tint = Color(0xFF00FFAA),
-                                                modifier = Modifier.size(18.dp)
+                                        Icon(
+                                            Icons.Default.Menu,
+                                            contentDescription = "Menú",
+                                            tint = Color(0xFF00FFAA),
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    }
+                                }
+
+                                // Logo
+                                Column {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Surface(
+                                            shape = CircleShape,
+                                            color = Color(0xFF00FFAA).copy(alpha = 0.2f),
+                                            modifier = Modifier.size(32.dp)
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Icon(
+                                                    Icons.Default.Star,
+                                                    contentDescription = null,
+                                                    tint = Color(0xFF00FFAA),
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                            }
+                                        }
+
+                                        Column {
+                                            Text(
+                                                "TIENDA",
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontSize = 11.sp,
+                                                color = Color(0xFF00FFAA).copy(alpha = 0.7f),
+                                                fontWeight = FontWeight.Light,
+                                                letterSpacing = 3.sp
+                                            )
+                                            Text(
+                                                "LEVEL UP",
+                                                style = MaterialTheme.typography.headlineSmall,
+                                                fontSize = 20.sp,
+                                                color = Color(0xFF00FFAA),
+                                                fontWeight = FontWeight.Black,
+                                                letterSpacing = 2.sp
                                             )
                                         }
-                                    }
-
-                                    Column {
-                                        Text(
-                                            "TECH STORE",
-                                            style = MaterialTheme.typography.titleSmall,
-                                            fontSize = 11.sp,
-                                            color = Color(0xFF00FFAA).copy(alpha = 0.7f),
-                                            fontWeight = FontWeight.Light,
-                                            letterSpacing = 3.sp
-                                        )
-                                        Text(
-                                            "LEVEL - UP",
-                                            style = MaterialTheme.typography.headlineSmall,
-                                            fontSize = 20.sp,
-                                            color = Color(0xFF00FFAA),
-                                            fontWeight = FontWeight.Black,
-                                            letterSpacing = 2.sp
-                                        )
                                     }
                                 }
                             }
@@ -250,7 +268,6 @@ fun CatalogoScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // Total productos
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -269,7 +286,6 @@ fun CatalogoScreen(
                                     )
                                 }
 
-                                // Separador
                                 Box(
                                     modifier = Modifier
                                         .width(1.dp)
@@ -277,32 +293,30 @@ fun CatalogoScreen(
                                         .background(Color(0xFF333333))
                                 )
 
-                                // Items en carrito
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
                                     Icon(
-                                        Icons.Default.CheckCircle,
+                                        Icons.Default.Favorite,
                                         contentDescription = null,
-                                        tint = if (carrito.isNotEmpty())
-                                            Color(0xFF00FFAA).copy(alpha = 0.6f)
+                                        tint = if (deseados.isNotEmpty())
+                                            Color(0xFFFF0055)
                                         else
                                             Color(0xFF555555),
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Text(
-                                        "Carrito: ${carrito.sumOf { it.cantidad }}",
+                                        "Deseados: ${deseados.size}",
                                         fontSize = 12.sp,
-                                        color = if (carrito.isNotEmpty())
-                                            Color(0xFF00FFAA)
+                                        color = if (deseados.isNotEmpty())
+                                            Color(0xFFFF0055)
                                         else
                                             Color(0xFF888888),
                                         fontWeight = FontWeight.Medium
                                     )
                                 }
 
-                                // Separador
                                 Box(
                                     modifier = Modifier
                                         .width(1.dp)
@@ -310,7 +324,6 @@ fun CatalogoScreen(
                                         .background(Color(0xFF333333))
                                 )
 
-                                // Status online
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -339,91 +352,67 @@ fun CatalogoScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Sección de Categorías con scroll horizontal
-            if (!cargando && productos.isNotEmpty()) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+            // BUSCADOR
+            if (!cargando) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(8.dp, RoundedCornerShape(12.dp)),
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFF1A1A1A)
                 ) {
-                    // Título de la sección
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Star,
-                            contentDescription = null,
-                            tint = Color(0xFF00FFAA),
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Text(
-                            "CATEGORÍAS",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Black,
-                            color = Color(0xFF00FFAA),
-                            letterSpacing = 2.sp
-                        )
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(1.dp)
-                                .background(
-                                    Brush.horizontalGradient(
-                                        colors = listOf(
-                                            Color(0xFF00FFAA).copy(alpha = 0.5f),
-                                            Color.Transparent
-                                        )
-                                    )
-                                )
-                        )
-                    }
-
-                    // Chips de categorías con scroll horizontal
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        categorias.forEach { categoria ->
-                            val isSelected = categoria == categoriaSeleccionada
-                            FilterChip(
-                                selected = isSelected,
-                                onClick = { categoriaSeleccionada = categoria },
-                                label = {
-                                    Text(
-                                        categoria,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        letterSpacing = 0.5.sp
-                                    )
-                                },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = Color(0xFF00FFAA),
-                                    selectedLabelColor = Color.Black,
-                                    containerColor = Color(0xFF1A1A1A),
-                                    labelColor = Color(0xFF888888)
-                                ),
-                                border = null,
-                                leadingIcon = if (isSelected) {
-                                    {
-                                        Icon(
-                                            Icons.Default.Star,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(14.dp)
-                                        )
-                                    }
-                                } else null,
-                                modifier = Modifier.border(
-                                    width = if (isSelected) 2.dp else 1.dp,
-                                    color = if (isSelected)
-                                        Color(0xFF00FFAA)
-                                    else
-                                        Color(0xFF00FFAA).copy(alpha = 0.3f),
-                                    shape = RoundedCornerShape(8.dp)
-                                )
+                            .border(
+                                1.dp,
+                                Color(0xFF00FFAA).copy(alpha = 0.3f),
+                                RoundedCornerShape(12.dp)
                             )
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = "Buscar",
+                            tint = Color(0xFF00FFAA).copy(alpha = 0.6f),
+                            modifier = Modifier.size(24.dp)
+                        )
+
+                        TextField(
+                            value = textoBusqueda,
+                            onValueChange = { viewModel.actualizarBusqueda(it) },
+                            placeholder = {
+                                Text(
+                                    "Buscar productos...",
+                                    color = Color(0xFF666666),
+                                    fontSize = 14.sp
+                                )
+                            },
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                cursorColor = Color(0xFF00FFAA),
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            ),
+                            singleLine = true,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        if (textoBusqueda.isNotEmpty()) {
+                            IconButton(
+                                onClick = { viewModel.limpiarBusqueda() }
+                            ) {
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = "Limpiar búsqueda",
+                                    tint = Color(0xFF00FFAA).copy(alpha = 0.6f),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -443,7 +432,10 @@ fun CatalogoScreen(
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        "PRODUCTOS DISPONIBLES",
+                        if (textoBusqueda.isEmpty())
+                            "PRODUCTOS DISPONIBLES"
+                        else
+                            "RESULTADOS DE BÚSQUEDA",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Black,
                         color = Color(0xFF00FFAA),
@@ -526,20 +518,26 @@ fun CatalogoScreen(
                                 modifier = Modifier.padding(40.dp)
                             ) {
                                 Icon(
-                                    Icons.Default.Info,
+                                    Icons.Default.Search,
                                     contentDescription = null,
                                     tint = Color(0xFF666666),
                                     modifier = Modifier.size(64.dp)
                                 )
                                 Text(
-                                    "NO HAY PRODUCTOS",
+                                    if (textoBusqueda.isEmpty())
+                                        "NO HAY PRODUCTOS"
+                                    else
+                                        "NO SE ENCONTRARON RESULTADOS",
                                     style = MaterialTheme.typography.titleLarge,
                                     color = Color(0xFF888888),
                                     fontWeight = FontWeight.Black,
                                     letterSpacing = 2.sp
                                 )
                                 Text(
-                                    "Vuelve pronto para ver nuestro catálogo",
+                                    if (textoBusqueda.isEmpty())
+                                        "Vuelve pronto para ver nuestro catálogo"
+                                    else
+                                        "Intenta con otros términos de búsqueda",
                                     color = Color(0xFF555555),
                                     fontSize = 12.sp
                                 )
@@ -551,7 +549,7 @@ fun CatalogoScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         contentPadding = PaddingValues(vertical = 8.dp)
                     ) {
-                        items(productosFiltrados, key = { it.id }) { producto ->
+                        items(productos, key = { it.id }) { producto ->
                             val cantidadEnCarrito = carrito.find { it.producto.id == producto.id }?.cantidad ?: 0
                             val productoUi = ProductoUiModel(
                                 producto = producto,
@@ -566,11 +564,12 @@ fun CatalogoScreen(
                                 onRemover = { viewModel.removerDelCarrito(producto) },
                                 onVerDetalle = {
                                     navController.navigate("detalle_producto/${producto.id}")
-                                }
+                                },
+                                onToggleDeseado = { viewModel.toggleDeseado(producto) },
+                                esDeseado = viewModel.esDeseado(producto.id)
                             )
                         }
 
-                        // Footer
                         item {
                             Surface(
                                 modifier = Modifier

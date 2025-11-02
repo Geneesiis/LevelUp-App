@@ -1,20 +1,20 @@
 package com.example.levelup.ui.screens.catalogo.components
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,7 +32,9 @@ fun ProductoCard(
     productoUi: ProductoUiModel,
     onAgregar: () -> Unit,
     onRemover: () -> Unit,
-    onVerDetalle: () -> Unit, // CAMBIO: sin parámetro Int
+    onVerDetalle: () -> Unit,
+    onToggleDeseado: () -> Unit = {},
+    esDeseado: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val scale by rememberCardScaleAnimation()
@@ -47,7 +49,7 @@ fun ProductoCard(
             ),
         shape = RoundedCornerShape(AppDimensions.cornerRadiusExtraLarge),
         color = GamingColors.Surface,
-        onClick = onVerDetalle // CAMBIO: llamada directa sin parámetro
+        onClick = onVerDetalle
     ) {
         Box(
             modifier = Modifier.border(
@@ -61,7 +63,9 @@ fun ProductoCard(
                 ProductoCardContent(
                     productoUi = productoUi,
                     onAgregar = onAgregar,
-                    onRemover = onRemover
+                    onRemover = onRemover,
+                    onToggleDeseado = onToggleDeseado,
+                    esDeseado = esDeseado
                 )
 
                 // Footer con información adicional
@@ -79,33 +83,70 @@ fun ProductoCard(
 private fun ProductoCardContent(
     productoUi: ProductoUiModel,
     onAgregar: () -> Unit,
-    onRemover: () -> Unit
+    onRemover: () -> Unit,
+    onToggleDeseado: () -> Unit,
+    esDeseado: Boolean
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(AppDimensions.paddingLarge)
-    ) {
-        ProductoImage(
-            imageUrl = productoUi.producto.imagen,
-            productName = productoUi.producto.nombre,
-            stock = productoUi.producto.stock
-        )
-
-        Spacer(modifier = Modifier.width(AppDimensions.paddingLarge))
-
-        Column(modifier = Modifier.weight(1f)) {
-            ProductoInfo(productoUi = productoUi)
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            ProductoControles(
-                cantidadEnCarrito = productoUi.cantidadEnCarrito,
-                stockDisponible = productoUi.stockDisponible,
-                stock = productoUi.producto.stock,
-                onAgregar = onAgregar,
-                onRemover = onRemover
+    Box {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(AppDimensions.paddingLarge)
+        ) {
+            ProductoImage(
+                imageUrl = productoUi.producto.imagen,
+                productName = productoUi.producto.nombre,
+                stock = productoUi.producto.stock
             )
+
+            Spacer(modifier = Modifier.width(AppDimensions.paddingLarge))
+
+            Column(modifier = Modifier.weight(1f)) {
+                ProductoInfo(productoUi = productoUi)
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                ProductoControles(
+                    cantidadEnCarrito = productoUi.cantidadEnCarrito,
+                    stockDisponible = productoUi.stockDisponible,
+                    stock = productoUi.producto.stock,
+                    onAgregar = onAgregar,
+                    onRemover = onRemover
+                )
+            }
+        }
+
+        // Botón de favorito (corazón) - Con shadow para que no se pegue
+        Surface(
+            onClick = onToggleDeseado,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(8.dp)
+                .size(40.dp)
+                .shadow(8.dp, androidx.compose.foundation.shape.CircleShape),
+            shape = androidx.compose.foundation.shape.CircleShape,
+            color = if (esDeseado)
+                Color(0xFFFF0055).copy(alpha = 0.9f)
+            else
+                Color(0xFF1A1A1A).copy(alpha = 0.95f)
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .border(
+                        2.dp,
+                        if (esDeseado) Color(0xFFFF0055) else Color(0xFF00FFAA).copy(alpha = 0.4f),
+                        androidx.compose.foundation.shape.CircleShape
+                    )
+            ) {
+                Icon(
+                    if (esDeseado) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (esDeseado) "Quitar de deseados" else "Agregar a deseados",
+                    tint = if (esDeseado) Color.White else Color(0xFF00FFAA),
+                    modifier = Modifier.size(22.dp)
+                )
+            }
         }
     }
 }

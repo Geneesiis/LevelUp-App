@@ -13,7 +13,7 @@ data class ResultadoProductos(
 class ProductoRepository {
     private val db = FirebaseFirestore.getInstance()
 
-    suspend fun obtenerProductos(limite: Int = 10): ResultadoProductos {
+    suspend fun obtenerProductos(limite: Int = 30): ResultadoProductos {
         return try {
             val query = db.collection("producto")
                 .whereGreaterThan("stock", 0)
