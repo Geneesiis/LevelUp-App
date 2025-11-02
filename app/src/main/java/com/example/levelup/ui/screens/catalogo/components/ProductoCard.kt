@@ -1,9 +1,11 @@
 package com.example.levelup.ui.screens.catalogo.components
 
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -23,6 +25,8 @@ import com.example.levelup.ui.screens.catalogo.utils.createProductBorderBrush
 import com.example.levelup.ui.screens.catalogo.utils.rememberCardScaleAnimation
 import com.example.levelup.ui.theme.AppDimensions
 import com.example.levelup.ui.theme.GamingColors
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Card completa del producto con imagen, info y controles
@@ -116,37 +120,140 @@ private fun ProductoCardContent(
             }
         }
 
-        // Botón de favorito (corazón) - Con shadow para que no se pegue
-        Surface(
-            onClick = onToggleDeseado,
+        // Botón de favorito mejorado con animaciones
+        FavoriteButton(
+            esDeseado = esDeseado,
+            onToggleDeseado = onToggleDeseado,
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(8.dp)
-                .size(40.dp)
-                .shadow(8.dp, androidx.compose.foundation.shape.CircleShape),
-            shape = androidx.compose.foundation.shape.CircleShape,
-            color = if (esDeseado)
-                Color(0xFFFF0055).copy(alpha = 0.9f)
-            else
-                Color(0xFF1A1A1A).copy(alpha = 0.95f)
+        )
+    }
+}
+
+@Composable
+private fun FavoriteButton(
+    esDeseado: Boolean,
+    onToggleDeseado: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // Estado para controlar el debounce
+    var isProcessing by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    // Estado local para animación inmediata
+    var localEsDeseado by remember(esDeseado) { mutableStateOf(esDeseado) }
+
+    // Animación de escala para el bounce
+    val scale by animateFloatAsState(
+        targetValue = if (localEsDeseado) 1f else 0.9f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "scale"
+    )
+
+    // Animación de rotación para efecto de "pop"
+    val rotation by animateFloatAsState(
+        targetValue = if (localEsDeseado) 360f else 0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "rotation"
+    )
+
+    // Animación de color
+    val backgroundColor by animateColorAsState(
+        targetValue = if (localEsDeseado)
+            Color(0xFFFF0055).copy(alpha = 0.9f)
+        else
+            Color(0xFF1A1A1A).copy(alpha = 0.95f),
+        animationSpec = tween(durationMillis = 200),
+        label = "backgroundColor"
+    )
+
+    val borderColor by animateColorAsState(
+        targetValue = if (localEsDeseado)
+            Color(0xFFFF0055)
+        else
+            Color(0xFF00FFAA).copy(alpha = 0.4f),
+        animationSpec = tween(durationMillis = 200),
+        label = "borderColor"
+    )
+
+    val iconTint by animateColorAsState(
+        targetValue = if (localEsDeseado)
+            Color.White
+        else
+            Color(0xFF00FFAA),
+        animationSpec = tween(durationMillis = 200),
+        label = "iconTint"
+    )
+
+    Surface(
+        onClick = {
+            if (!isProcessing) {
+                isProcessing = true
+                localEsDeseado = !localEsDeseado
+
+                scope.launch {
+                    onToggleDeseado()
+                    delay(300) // Debounce de 300ms
+                    isProcessing = false
+                }
+            }
+        },
+        modifier = modifier
+            .size(40.dp)
+            .scale(scale)
+            .shadow(12.dp, CircleShape),
+        shape = CircleShape,
+        color = backgroundColor
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .border(
+                    width = 2.dp,
+                    color = borderColor,
+                    shape = CircleShape
+                )
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .border(
-                        2.dp,
-                        if (esDeseado) Color(0xFFFF0055) else Color(0xFF00FFAA).copy(alpha = 0.4f),
-                        androidx.compose.foundation.shape.CircleShape
-                    )
-            ) {
+            // Animación crossfade entre los íconos
+            AnimatedContent(
+                targetState = localEsDeseado,
+                transitionSpec = {
+                    fadeIn(animationSpec = tween(200)) +
+                            scaleIn(
+                                initialScale = 0.8f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessMedium
+                                )
+                            ) togetherWith
+                            fadeOut(animationSpec = tween(100)) +
+                            scaleOut(targetScale = 0.8f, animationSpec = tween(100))
+                },
+                label = "iconCrossfade"
+            ) { deseado ->
                 Icon(
-                    if (esDeseado) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if (esDeseado) "Quitar de deseados" else "Agregar a deseados",
-                    tint = if (esDeseado) Color.White else Color(0xFF00FFAA),
+                    imageVector = if (deseado) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (deseado) "Quitar de deseados" else "Agregar a deseados",
+                    tint = iconTint,
                     modifier = Modifier.size(22.dp)
                 )
             }
+        }
+    }
+
+    // Efecto de partículas cuando se marca como favorito (opcional)
+    if (localEsDeseado) {
+        LaunchedEffect(localEsDeseado) {
+            // Aquí podrías agregar efectos adicionales como vibración
+            // HapticFeedback si lo necesitas
         }
     }
 }
@@ -211,7 +318,7 @@ private fun FooterItem(
                 .size(8.dp)
                 .background(
                     if (isGreen) GamingColors.Success else GamingColors.Primary.copy(alpha = 0.6f),
-                    androidx.compose.foundation.shape.CircleShape
+                    CircleShape
                 )
         )
         Text(

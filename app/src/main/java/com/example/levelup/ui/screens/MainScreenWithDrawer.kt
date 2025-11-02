@@ -78,8 +78,7 @@ fun MainScreenWithDrawer(
                 },
                 onNavigateToHistorial = {
                     scope.launch {
-                        // navController.navigate("historial")
-                        // Por ahora no hace nada, implementa cuando tengas HistorialScreen
+                        navController.navigate("historial")
                         drawerState.close()
                     }
                 },
@@ -172,6 +171,25 @@ fun MainScreenWithDrawer(
                 )
             }
 
+            // Historial - CORREGIDO CON viewModel
+            composable("historial") {
+                HistorialScreen(
+                    viewModel = viewModel,  // ← AGREGADO: Faltaba pasar el viewModel
+                    onToggleDrawer = {
+                        scope.launch {
+                            if (drawerState.isClosed) {
+                                drawerState.open()
+                            } else {
+                                drawerState.close()
+                            }
+                        }
+                    },
+                    onBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+
             // Pago/Confirmación
             composable("pago") {
                 PagoConfirmacionScreen(
@@ -201,12 +219,6 @@ fun MainScreenWithDrawer(
                         }
                     )
                 }
-            }
-
-            // Historial
-            composable("historial") {
-                // HistorialScreen(...) cuando la tengas
-                // Por ahora muestra un placeholder o deja vacío
             }
         }
     }

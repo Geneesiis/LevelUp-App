@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -131,44 +132,42 @@ fun DeseadosScreen(
                                 }
 
                                 // Logo de deseados
-                                Column {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Surface(
+                                        shape = CircleShape,
+                                        color = Color(0xFFFF0055).copy(alpha = 0.2f),
+                                        modifier = Modifier.size(32.dp)
                                     ) {
-                                        Surface(
-                                            shape = CircleShape,
-                                            color = Color(0xFFFF0055).copy(alpha = 0.2f),
-                                            modifier = Modifier.size(32.dp)
-                                        ) {
-                                            Box(contentAlignment = Alignment.Center) {
-                                                Icon(
-                                                    Icons.Default.Favorite,
-                                                    contentDescription = null,
-                                                    tint = Color(0xFFFF0055),
-                                                    modifier = Modifier.size(18.dp)
-                                                )
-                                            }
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Icon(
+                                                Icons.Default.Favorite,
+                                                contentDescription = null,
+                                                tint = Color(0xFFFF0055),
+                                                modifier = Modifier.size(18.dp)
+                                            )
                                         }
+                                    }
 
-                                        Column {
-                                            Text(
-                                                "LISTA DE",
-                                                style = MaterialTheme.typography.titleSmall,
-                                                fontSize = 11.sp,
-                                                color = Color(0xFFFF0055).copy(alpha = 0.7f),
-                                                fontWeight = FontWeight.Light,
-                                                letterSpacing = 3.sp
-                                            )
-                                            Text(
-                                                "DESEADOS",
-                                                style = MaterialTheme.typography.headlineSmall,
-                                                fontSize = 20.sp,
-                                                color = Color(0xFFFF0055),
-                                                fontWeight = FontWeight.Black,
-                                                letterSpacing = 2.sp
-                                            )
-                                        }
+                                    Column {
+                                        Text(
+                                            "LISTA DE",
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontSize = 11.sp,
+                                            color = Color(0xFFFF0055).copy(alpha = 0.7f),
+                                            fontWeight = FontWeight.Light,
+                                            letterSpacing = 3.sp
+                                        )
+                                        Text(
+                                            "DESEADOS",
+                                            style = MaterialTheme.typography.headlineSmall,
+                                            fontSize = 20.sp,
+                                            color = Color(0xFFFF0055),
+                                            fontWeight = FontWeight.Black,
+                                            letterSpacing = 2.sp
+                                        )
                                     }
                                 }
                             }
@@ -417,34 +416,115 @@ fun DeseadosScreen(
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                // Botón especial: Mover al carrito
+                                // Botón mejorado: Mover al carrito
                                 Button(
                                     onClick = { viewModel.moverDeseadoAlCarrito(producto) },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(48.dp),
+                                        .height(52.dp),
                                     shape = RoundedCornerShape(12.dp),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color(0xFF00FFAA).copy(alpha = 0.15f),
-                                        contentColor = Color(0xFF00FFAA)
+                                        contentColor = Color(0xFF00FFAA),
+                                        disabledContainerColor = Color(0xFF333333).copy(alpha = 0.3f),
+                                        disabledContentColor = Color(0xFF666666)
                                     ),
-                                    enabled = producto.stock > 0
+                                    enabled = producto.stock > 0,
+                                    elevation = ButtonDefaults.buttonElevation(
+                                        defaultElevation = 4.dp,
+                                        pressedElevation = 2.dp
+                                    )
                                 ) {
-                                    Icon(
-                                        Icons.Default.AddShoppingCart,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        "MOVER AL CARRITO Y QUITAR DE DESEADOS",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 12.sp,
-                                        letterSpacing = 1.sp
-                                    )
+                                    Row(
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Icon(
+                                            Icons.Default.AddShoppingCart,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            Text(
+                                                "MOVER AL CARRITO",
+                                                fontWeight = FontWeight.Black,
+                                                fontSize = 12.sp,
+                                                letterSpacing = 1.5.sp,
+                                                textAlign = TextAlign.Center
+                                            )
+                                            Text(
+                                                "y quitar de deseados",
+                                                fontWeight = FontWeight.Normal,
+                                                fontSize = 9.sp,
+                                                letterSpacing = 0.5.sp,
+                                                color = Color(0xFF00FFAA).copy(alpha = 0.7f),
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
+                    }
+
+                    // Footer
+                    item {
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Botón para agregar todos al carrito
+                        if (deseados.isNotEmpty()) {
+                            Button(
+                                onClick = { viewModel.moverTodosDeseadosAlCarrito() },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp),
+                                shape = RoundedCornerShape(14.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF00FFAA),
+                                    contentColor = Color.Black
+                                ),
+                                elevation = ButtonDefaults.buttonElevation(
+                                    defaultElevation = 8.dp,
+                                    pressedElevation = 2.dp
+                                )
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Icon(
+                                        Icons.Default.ShoppingCart,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text(
+                                            "AGREGAR TODOS AL CARRITO",
+                                            fontWeight = FontWeight.Black,
+                                            fontSize = 13.sp,
+                                            letterSpacing = 1.5.sp
+                                        )
+                                        Text(
+                                            "${deseados.size} productos • ${String.format("%,.0f", deseados.sumOf { it.precio })} CLP",
+                                            fontWeight = FontWeight.Medium,
+                                            fontSize = 10.sp,
+                                            color = Color.Black.copy(alpha = 0.7f)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
                     }
                 }
             }
