@@ -42,15 +42,19 @@ fun RegistroScreen(
     // Observar éxito del registro
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
-            Toast.makeText(context, "Registro exitoso", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "¡Registro exitoso! Ahora inicia sesión", Toast.LENGTH_LONG).show()
+            viewModel.limpiarRegistro()
             onRegisterSuccess()
         }
     }
 
-    // Observar errores
+    // Observar errores y mostrar Toast
     LaunchedEffect(errorMensaje) {
-        if (errorMensaje.isNotEmpty()) {
-            Toast.makeText(context, errorMensaje, Toast.LENGTH_LONG).show()
+        errorMensaje?.let { mensaje ->
+            if (mensaje.isNotEmpty()) {
+                Toast.makeText(context, mensaje, Toast.LENGTH_LONG).show()
+                viewModel.limpiarError() // Limpiar después de mostrar
+            }
         }
     }
 
@@ -83,7 +87,7 @@ fun RegistroScreen(
                 "CREAR CUENTA",
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.Black,
-                    color = Color(0xFF00FFAA) // Verde cyber
+                    color = Color(0xFF00FFAA)
                 )
             )
 

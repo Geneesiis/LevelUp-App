@@ -2,6 +2,8 @@ package com.example.levelup.repository
 
 import com.example.levelup.model.User
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
@@ -11,6 +13,7 @@ class AuthRepository {
 
     suspend fun login(correo: String, clave: String): User? {
         return try {
+            // Intentar autenticar con Firebase
             val resultado = auth.signInWithEmailAndPassword(correo, clave).await()
             val firebaseUser = resultado.user
 
@@ -27,10 +30,28 @@ class AuthRepository {
                     obtenerUsuarioDeFirestore(firebaseUser.uid, correo)
                 }
             } else {
-                null
+                throw Exception("No se pudo obtener el usuario")
             }
+        } catch (e: FirebaseAuthInvalidUserException) {
+            // El usuario no existe (correo no registrado)
+            throw Exception("El correo no está registrado")
+
+        } catch (e: FirebaseAuthInvalidCredentialsException) {
+            // La contraseña es incorrecta
+            throw Exception("Contraseña incorrecta")
+
         } catch (e: Exception) {
-            throw Exception("Error de autenticación: ${e.message}")
+            // Otros errores
+            when {
+                e.message?.contains("There is no user record", ignoreCase = true) == true ->
+                    throw Exception("El correo no está registrado")
+                e.message?.contains("password is invalid", ignoreCase = true) == true ->
+                    throw Exception("Contraseña incorrecta")
+                e.message?.contains("network", ignoreCase = true) == true ->
+                    throw Exception("Error de conexión. Verifica tu internet")
+                else ->
+                    throw Exception(e.message ?: "Error al iniciar sesión")
+            }
         }
     }
 
@@ -62,5 +83,43 @@ class AuthRepository {
                 rol = "cliente"
             )
         }
+    }
+
+    /**
+     * Registro de nuevo usuario
+     */
+    suspend fun registrar(nombre: String, correo: String, clave: String): User? {
+        return try {
+            // Crear usuario en Firebase Auth
+            val resultado = auth.createUserWithEmailAndPassword(correo, clave).await()
+            val uid = resultado.user?.uid ?: throw Exception("Error al crear usuario")
+
+            // Guardar datos en Firestore
+            val userData = hashMapOf(
+                "nombre" to nombre,
+                "correo" to correo,
+                "rol" to "cliente"
+            )
+
+            db.collection("Usuario")
+                .document(uid)
+                .set(userData)
+                .await()
+
+            User(
+                correo = correo,
+                nombre = nombre,
+                rol = "cliente"
+            )
+        } catch (e: Exception) {
+            throw Exception("Error al registrar: ${e.message}")
+        }
+    }
+
+    /**
+     * Cerrar sesión
+     */
+    fun logout() {
+        auth.signOut()
     }
 }

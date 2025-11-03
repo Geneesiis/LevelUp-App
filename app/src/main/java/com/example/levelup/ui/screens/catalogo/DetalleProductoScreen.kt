@@ -1,18 +1,24 @@
 package com.example.levelup.ui.screens.catalogo
 
-import androidx.compose.foundation.Image
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -20,9 +26,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.levelup.model.Producto
 import com.example.levelup.ui.screens.catalogo.utils.FormatUtils.formatPrecioCLP
-import java.text.NumberFormat
-import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetalleProductoScreen(
     producto: Producto,
@@ -31,185 +36,369 @@ fun DetalleProductoScreen(
 ) {
     val scrollState = rememberScrollState()
 
+    // Animación de brillo
+    val infiniteTransition = rememberInfiniteTransition(label = "shine")
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 0.8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "glow"
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF000000),
+                        Color(0xFF0A0000),
+                        Color(0xFF000000)
+                    )
+                )
+            )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-            // Header con botón volver
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp, start = 16.dp, end = 16.dp, bottom = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = onVolverAlCatalogo,
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Icon(
-                        Icons.Default.ArrowBack,
-                        contentDescription = "Volver al catálogo",
-                        tint = Color(0xFF00FFAA)
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    "DETALLE DEL PRODUCTO",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = Color(0xFF00FFAA),
-                    fontWeight = FontWeight.Black,
-                    fontSize = 16.sp
-                )
-            }
-
-            // Imagen del producto en grande
+            // Header con gradiente y botón volver
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp)
-                    .background(Color(0xFF111111)),
-                contentAlignment = Alignment.Center
-            ) {
-                if (producto.imagen.isNotEmpty()) {
-                    AsyncImage(
-                        model = producto.imagen,
-                        contentDescription = "Imagen de ${producto.nombre}",
-                        modifier = Modifier.fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFF1A0000),
+                                Color.Transparent
+                            )
+                        )
                     )
-                } else {
-                    Icon(
-                        Icons.Default.ShoppingCart,
-                        contentDescription = "Sin imagen",
-                        tint = Color(0xFF666666),
-                        modifier = Modifier.size(80.dp)
+                    .padding(top = 40.dp, start = 16.dp, end = 16.dp, bottom = 16.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Surface(
+                        modifier = Modifier.size(40.dp),
+                        shape = CircleShape,
+                        color = Color(0xFF1A0000),
+                        onClick = onVolverAlCatalogo
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.border(
+                                1.dp,
+                                Color(0xFF00FFAA).copy(alpha = 0.4f),
+                                CircleShape
+                            )
+                        ) {
+                            Icon(
+                                Icons.Default.ArrowBack,
+                                contentDescription = "Volver",
+                                tint = Color(0xFF00FFAA),
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                    }
+
+                    Text(
+                        "DETALLES",
+                        fontSize = 16.sp,
+                        color = Color(0xFF00FFAA),
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp
                     )
                 }
             }
 
-            // Información del producto
+            // Imagen del producto con efecto
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .height(340.dp)
+                    .shadow(24.dp, RoundedCornerShape(20.dp)),
+                shape = RoundedCornerShape(20.dp),
+                color = Color(0xFF0D0000)
+            ) {
+                Box(
+                    modifier = Modifier.border(
+                        2.dp,
+                        Brush.linearGradient(
+                            colors = listOf(
+                                Color(0xFF00FFAA).copy(alpha = glowAlpha * 0.6f),
+                                Color(0xFF00FFAA).copy(alpha = glowAlpha * 0.3f),
+                                Color(0xFF00FFAA).copy(alpha = glowAlpha * 0.6f)
+                            )
+                        ),
+                        RoundedCornerShape(20.dp)
+                    ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (producto.imagen.isNotEmpty()) {
+                        AsyncImage(
+                            model = producto.imagen,
+                            contentDescription = producto.nombre,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(20.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(
+                            Icons.Default.Inventory2,
+                            contentDescription = null,
+                            tint = Color(0xFF333333),
+                            modifier = Modifier.size(100.dp)
+                        )
+                    }
+
+                    // Badge de stock
+                    if (producto.stock <= 5 && producto.stock > 0) {
+                        Surface(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(16.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFFFFAA00)
+                        ) {
+                            Text(
+                                "¡ÚLTIMAS UNIDADES!",
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color.Black,
+                                letterSpacing = 1.sp
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Información principal
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp)
+                    .padding(horizontal = 24.dp)
             ) {
-                // Nombre del producto
+                // Nombre
                 Text(
                     text = producto.nombre,
-                    style = MaterialTheme.typography.headlineLarge,
+                    fontSize = 28.sp,
                     fontWeight = FontWeight.Black,
                     color = Color.White,
-                    textAlign = TextAlign.Start
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Precio
-                Text(
-                    text = formatPrecioCLP(producto.precio),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = Color(0xFF00FFAA),
-                    fontWeight = FontWeight.Black
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Descripción
-                Text(
-                    text = "DESCRIPCIÓN",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color(0xFF00FFAA),
-                    fontWeight = FontWeight.Bold
+                    lineHeight = 34.sp
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text(
-                    text = producto.descripcion.ifEmpty { "No hay descripción disponible para este producto." },
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color(0xFFCCCCCC),
-                    lineHeight = 24.sp,
-                    textAlign = TextAlign.Justify
-                )
+                // Categoría
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = Color(0xFF00FFAA).copy(alpha = 0.15f)
+                ) {
+                    Text(
+                        producto.categoria,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF00FFAA),
+                        letterSpacing = 1.sp
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                // Especificaciones
+                // Precio con efecto
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFF00FFAA).copy(alpha = 0.1f),
+                    modifier = Modifier.border(
+                        1.dp,
+                        Color(0xFF00FFAA).copy(alpha = 0.3f),
+                        RoundedCornerShape(12.dp)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(
+                                "PRECIO",
+                                fontSize = 10.sp,
+                                color = Color(0xFF888888),
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            )
+                            Text(
+                                formatPrecioCLP(producto.precio),
+                                fontSize = 32.sp,
+                                color = Color(0xFF00FFAA),
+                                fontWeight = FontWeight.Black
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(28.dp))
+
+                // Descripción
                 Text(
-                    text = "ESPECIFICACIONES",
-                    style = MaterialTheme.typography.titleMedium,
+                    "DESCRIPCIÓN",
+                    fontSize = 13.sp,
                     color = Color(0xFF00FFAA),
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 2.sp
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Stock (solo visible para ver información)
+                Text(
+                    producto.descripcion.ifEmpty { "Sin descripción disponible" },
+                    fontSize = 15.sp,
+                    color = Color(0xFFCCCCCC),
+                    lineHeight = 22.sp,
+                    textAlign = TextAlign.Justify
+                )
+
+                Spacer(modifier = Modifier.height(28.dp))
+
+                // Especificaciones
+                Text(
+                    "DISPONIBILIDAD",
+                    fontSize = 13.sp,
+                    color = Color(0xFF00FFAA),
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 2.sp
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Cards de info
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
-                        text = "Disponibilidad:",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color(0xFF888888)
+                    InfoCard(
+                        icon = Icons.Default.Inventory,
+                        label = "STOCK",
+                        value = "${producto.stock} unidades",
+                        color = if (producto.stock > 5) Color(0xFF00FFAA)
+                        else if (producto.stock > 0) Color(0xFFFFAA00)
+                        else Color(0xFFFF5555),
+                        modifier = Modifier.weight(1f)
                     )
-                    Text(
-                        text = if (producto.stock > 0) "En stock" else "Agotado",
-                        style = MaterialTheme.typography.bodyMedium,
+
+                    InfoCard(
+                        icon = Icons.Default.CheckCircle,
+                        label = "ESTADO",
+                        value = if (producto.stock > 0) "Disponible" else "Agotado",
                         color = if (producto.stock > 0) Color(0xFF00FFAA) else Color(0xFFFF5555),
-                        fontWeight = FontWeight.Bold
+                        modifier = Modifier.weight(1f)
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Unidades disponibles:",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color(0xFF888888)
-                    )
-                    Text(
-                        text = producto.stock.toString(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
                 // Botón Agregar al Carrito
                 Button(
                     onClick = onAgregarAlCarrito,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(60.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF00FFAA),
-                        contentColor = Color.Black
+                        contentColor = Color.Black,
+                        disabledContainerColor = Color(0xFF333333),
+                        disabledContentColor = Color(0xFF666666)
                     ),
+                    shape = RoundedCornerShape(14.dp),
                     elevation = ButtonDefaults.buttonElevation(
-                        defaultElevation = 8.dp,
-                        pressedElevation = 4.dp
+                        defaultElevation = 12.dp,
+                        pressedElevation = 4.dp,
+                        disabledElevation = 0.dp
                     ),
                     enabled = producto.stock > 0
                 ) {
+                    Icon(
+                        Icons.Default.ShoppingCart,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        "AGREGAR AL CARRITO",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Black
+                        if (producto.stock > 0) "AGREGAR AL CARRITO" else "PRODUCTO AGOTADO",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.5.sp
                     )
                 }
+
+                Spacer(modifier = Modifier.height(40.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun InfoCard(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    value: String,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier
+            .shadow(8.dp, RoundedCornerShape(12.dp)),
+        shape = RoundedCornerShape(12.dp),
+        color = Color(0xFF0D0000)
+    ) {
+        Box(
+            modifier = Modifier.border(
+                1.dp,
+                color.copy(alpha = 0.3f),
+                RoundedCornerShape(12.dp)
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = color,
+                    modifier = Modifier.size(28.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    label,
+                    fontSize = 9.sp,
+                    color = Color(0xFF888888),
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    value,
+                    fontSize = 13.sp,
+                    color = color,
+                    fontWeight = FontWeight.Black,
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }
