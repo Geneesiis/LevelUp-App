@@ -9,12 +9,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.levelup.ui.screens.carrito.CarritoScreen
 import com.example.levelup.ui.screens.catalogo.DetalleProductoScreen
 import com.example.levelup.ui.screens.login.LoginScreen
-import com.example.levelup.ui.screens.pago.PagoConfirmacionScreen
-import com.example.levelup.ui.screens.perfil.PerfilAdminScreen
-import com.example.levelup.ui.screens.perfil.PerfilClienteScreen
+import com.example.levelup.ui.screens.admin.PerfilAdminScreen
+import com.example.levelup.ui.screens.admin.ProductosAdminScreen
+import com.example.levelup.ui.screens.admin.PedidosAdminScreen
 import com.example.levelup.ui.screens.registro.RegistroScreen
 import com.example.levelup.viewmodel.CarritoViewModel
 import com.example.levelup.ui.screens.MainScreenWithDrawer
@@ -58,14 +57,13 @@ fun AppNavegacion() {
             )
         }
 
-        // 🆕 APP PRINCIPAL CON DRAWER (Catálogo, Deseados, Carrito, Perfil)
+        // APP PRINCIPAL CON DRAWER (Catálogo, Deseados, Carrito, Perfil)
         composable(
             "main/{nombre}",
             arguments = listOf(navArgument("nombre") { type = NavType.StringType })
         ) { backStackEntry ->
             val nombre = backStackEntry.arguments?.getString("nombre") ?: "Cliente"
 
-            // Aquí va el MainScreenWithDrawer que incluye navegación interna
             MainScreenWithDrawer(
                 viewModel = carritoViewModel,
                 nombreUsuario = nombre,
@@ -77,7 +75,7 @@ fun AppNavegacion() {
             )
         }
 
-        // Detalle Producto (se puede acceder desde el drawer también)
+        // Detalle Producto
         composable(
             "detalle_producto/{productoId}",
             arguments = listOf(navArgument("productoId") { type = NavType.StringType })
@@ -98,34 +96,49 @@ fun AppNavegacion() {
             }
         }
 
-        // Perfil Admin (sin cambios)
+        // ==================== PANTALLAS DE ADMINISTRADOR ====================
+
+        // Perfil Admin Principal
         composable(
             "perfil_admin/{nombre}",
             arguments = listOf(navArgument("nombre") { type = NavType.StringType })
         ) { backStackEntry ->
             val nombre = backStackEntry.arguments?.getString("nombre") ?: "Administrador"
             PerfilAdminScreen(
+                viewModel = carritoViewModel,
                 nombre = nombre,
                 onLogout = {
                     navController.navigate("login") {
                         popUpTo(0) { inclusive = true }
                     }
+                },
+                onNavigateToProductos = {
+                    navController.navigate("admin_productos")
+                },
+                onNavigateToPedidos = {
+                    navController.navigate("admin_pedidos")
+                }
+            )
+        }
+
+        // Gestión de Productos (Admin)
+        composable("admin_productos") {
+            ProductosAdminScreen(
+                viewModel = carritoViewModel,
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // Gestión de Pedidos (Admin)
+        composable("admin_pedidos") {
+            PedidosAdminScreen(
+                viewModel = carritoViewModel,
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }
     }
 }
-
-/*
- * NOTA: Las rutas individuales de "catalogo", "carrito", "perfil_cliente", etc.
- * ahora están DENTRO de MainScreenWithDrawer, que maneja su propia navegación interna.
- *
- * MainScreenWithDrawer incluye:
- * - Catálogo (con buscador)
- * - Deseados
- * - Carrito
- * - Perfil Cliente
- * - Historial (si lo tienes)
- *
- * Y todas tienen acceso al Drawer (sidebar) para navegar entre ellas.
- */

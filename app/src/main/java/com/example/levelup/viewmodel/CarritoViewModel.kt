@@ -6,17 +6,19 @@ import com.example.levelup.model.ItemCarrito
 import com.example.levelup.model.Pedido
 import com.example.levelup.model.Producto
 import com.example.levelup.model.EstadoPedido
+import com.example.levelup.repository.PedidoRepository
 import com.example.levelup.repository.ProductoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import com.example.levelup.ui.screens.admin.ProductosAdminScreen
+import com.example.levelup.ui.screens.admin.PedidosAdminScreen
 
 class CarritoViewModel : ViewModel() {
     private val repository = ProductoRepository()
+    private val pedidoRepository = PedidoRepository()
 
     private val _productos = MutableStateFlow<List<Producto>>(emptyList())
     val productos: StateFlow<List<Producto>> = _productos
@@ -40,10 +42,7 @@ class CarritoViewModel : ViewModel() {
     private val _textoBusqueda = MutableStateFlow("")
     val textoBusqueda: StateFlow<String> = _textoBusqueda
 
-    // Job para debounce de búsqueda
-    private var searchJob: Job? = null
-
-    // Productos filtrados por búsqueda
+    // Productos filtrados por búsqueda (CORREGIDO - sin debounce)
     val productosFiltrados: StateFlow<List<Producto>> = combine(
         _productos,
         _textoBusqueda
@@ -64,8 +63,26 @@ class CarritoViewModel : ViewModel() {
 
     init {
         cargarProductos()
+        cargarPedidos()
     }
 
+    /**
+     * Carga los pedidos desde Firebase
+     */
+    private fun cargarPedidos() {
+        viewModelScope.launch {
+            try {
+                val resultado = pedidoRepository.obtenerPedidos()
+                resultado.onSuccess { pedidos ->
+                    _historial.value = pedidos
+                }.onFailure { error ->
+                    error.printStackTrace()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
     fun cargarProductos() {
         _cargando.value = true
         viewModelScope.launch {
@@ -80,17 +97,12 @@ class CarritoViewModel : ViewModel() {
         }
     }
 
-    // Funciones de búsqueda con debounce
+    // FUNCIONES DE BÚSQUEDA CORREGIDAS
     fun actualizarBusqueda(texto: String) {
-        searchJob?.cancel()
-        searchJob = viewModelScope.launch {
-            delay(300) // Debounce de 300ms
-            _textoBusqueda.value = texto
-        }
+        _textoBusqueda.value = texto
     }
 
     fun limpiarBusqueda() {
-        searchJob?.cancel()
         _textoBusqueda.value = ""
     }
 
@@ -203,24 +215,35 @@ class CarritoViewModel : ViewModel() {
     // ==================== FUNCIONES DE HISTORIAL ====================
 
     /**
-     * Confirma la compra y crea un pedido en el historial
+     * Confirma la compra y guarda en Firebase
      */
     fun confirmarCompra(metodoPago: String = "Tarjeta", direccion: String = "Dirección por defecto") {
         if (_carrito.value.isEmpty()) return
 
         val pedido = Pedido(
-            productos = _carrito.value.map { it.copy() }, // Copia de los items
+            productos = _carrito.value.map { it.copy() },
             total = obtenerTotal(),
             estado = EstadoPedido.CONFIRMADO,
             metodoPago = metodoPago,
             direccionEntrega = direccion
         )
 
-        // Agregar al historial
-        _historial.value = listOf(pedido) + _historial.value
-
-        // Vaciar el carrito
-        vaciarCarrito()
+        viewModelScope.launch {
+            try {
+                // Guardar en Firebase
+                val resultado = pedidoRepository.guardarPedido(pedido)
+                resultado.onSuccess {
+                    // Actualizar lista local
+                    _historial.value = listOf(pedido) + _historial.value
+                    // Vaciar carrito
+                    vaciarCarrito()
+                }.onFailure { error ->
+                    error.printStackTrace()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     /**
@@ -231,14 +254,51 @@ class CarritoViewModel : ViewModel() {
     }
 
     /**
-     * Actualiza el estado de un pedido
+     * Actualiza el estado de un pedido en Firebase
      */
     fun actualizarEstadoPedido(pedidoId: String, nuevoEstado: EstadoPedido) {
-        _historial.value = _historial.value.map { pedido ->
-            if (pedido.id == pedidoId) {
-                pedido.copy(estado = nuevoEstado)
-            } else {
-                pedido
+        viewModelScope.launch {
+            try {
+                // Actualizar en Firebase
+                val resultado = pedidoRepository.actualizarEstadoPedido(pedidoId, nuevoEstado)
+                resultado.onSuccess {
+                    // Actualizar lista local
+                    _historial.value = _historial.value.map { pedido ->
+                        if (pedido.id == pedidoId) {
+                            pedido.copy(estado = nuevoEstado)
+                        } else {
+                            pedido
+                        }
+                    }
+                }.onFailure { error ->
+                    error.printStackTrace()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    /**
+     * Actualiza el stock de un producto (solo admin)
+     */
+    fun actualizarStockProducto(productoId: String, nuevoStock: Int) {
+        viewModelScope.launch {
+            try {
+                // Actualizar en Firebase
+                val resultado = repository.actualizarStock(productoId, nuevoStock)
+                if (resultado) {
+                    // Actualizar lista local
+                    _productos.value = _productos.value.map { producto ->
+                        if (producto.id == productoId) {
+                            producto.copy(stock = nuevoStock)
+                        } else {
+                            producto
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

@@ -28,6 +28,7 @@ class ProductoRepository {
                     precio = document.getDouble("precio") ?: 0.0,
                     imagen = document.getString("imagen") ?: "",
                     stock = document.getLong("stock")?.toInt() ?: 0,
+                    categoria = document.getString("categoria") ?: "Sin categoría",
                     descripcion = document.getString("descripcion") ?: "Sin descripción disponible"
                 )
             }
@@ -61,7 +62,9 @@ class ProductoRepository {
                     nombre = document.getString("nombre") ?: "",
                     precio = document.getDouble("precio") ?: 0.0,
                     imagen = document.getString("imagen") ?: "",
-                    stock = document.getLong("stock")?.toInt() ?: 0
+                    stock = document.getLong("stock")?.toInt() ?: 0,
+                    categoria = document.getString("categoria") ?: "Sin categoría",
+                    descripcion = document.getString("descripcion") ?: "Sin descripción disponible"
                 )
             }
 
@@ -100,7 +103,9 @@ class ProductoRepository {
                     nombre = document.getString("nombre") ?: "",
                     precio = document.getDouble("precio") ?: 0.0,
                     imagen = document.getString("imagen") ?: "",
-                    stock = document.getLong("stock")?.toInt() ?: 0
+                    stock = document.getLong("stock")?.toInt() ?: 0,
+                    categoria = document.getString("categoria") ?: "Sin categoría",
+                    descripcion = document.getString("descripcion") ?: "Sin descripción disponible"
                 )
             } else {
                 null
