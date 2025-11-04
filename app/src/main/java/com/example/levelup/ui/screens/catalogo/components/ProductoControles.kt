@@ -16,10 +16,7 @@ import androidx.compose.ui.unit.sp
 import com.example.levelup.ui.theme.AppDimensions
 import com.example.levelup.ui.theme.GamingColors
 
-/**
- * Controles para agregar/eliminar productos del carrito
- * OPTIMIZADO: Sin AnimatedContent para eliminar el lag
- */
+// Controles para agregar/eliminar productos del carrito
 @Composable
 fun ProductoControles(
     cantidadEnCarrito: Int,

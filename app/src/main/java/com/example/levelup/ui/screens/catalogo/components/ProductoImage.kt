@@ -23,9 +23,7 @@ import coil.compose.AsyncImage
 import com.example.levelup.ui.theme.AppDimensions
 import com.example.levelup.ui.theme.GamingColors
 
-/**
- * Imagen del producto con badges de stock
- */
+//Imagen del producto con badges de stock
 @Composable
 fun ProductoImage(
     imageUrl: String,

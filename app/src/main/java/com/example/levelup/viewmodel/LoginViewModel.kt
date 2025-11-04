@@ -55,16 +55,12 @@ class LoginViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Limpia el error después de mostrarlo
-     */
+    //Limpia el error después de mostrarlo
     fun limpiarError() {
         _error.value = null
     }
 
-    /**
-     * Cierra sesión
-     */
+    // Cierra sesión
     fun logout() {
         _user.value = null
         _error.value = null

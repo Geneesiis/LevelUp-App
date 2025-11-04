@@ -12,9 +12,7 @@ class PedidoRepository {
     private val firestore = FirebaseFirestore.getInstance()
     private val pedidosCollection = firestore.collection("pedidos")
 
-    /**
-     * Guarda un pedido en Firestore
-     */
+    // Guarda un pedido en Firestore
     suspend fun guardarPedido(pedido: Pedido): Result<String> {
         return try {
             val pedidoMap = hashMapOf(
@@ -45,9 +43,7 @@ class PedidoRepository {
         }
     }
 
-    /**
-     * Obtiene todos los pedidos desde Firestore
-     */
+    // Obtiene todos los pedidos desde Firestore
     suspend fun obtenerPedidos(): Result<List<Pedido>> {
         return try {
             val snapshot = pedidosCollection
@@ -92,9 +88,7 @@ class PedidoRepository {
         }
     }
 
-    /**
-     * Actualiza el estado de un pedido
-     */
+    // Actualiza el estado de un pedido
     suspend fun actualizarEstadoPedido(pedidoId: String, nuevoEstado: EstadoPedido): Result<Unit> {
         return try {
             pedidosCollection.document(pedidoId)
@@ -106,9 +100,7 @@ class PedidoRepository {
         }
     }
 
-    /**
-     * Elimina un pedido
-     */
+    // Elimina un pedido
     suspend fun eliminarPedido(pedidoId: String): Result<Unit> {
         return try {
             pedidosCollection.document(pedidoId).delete().await()

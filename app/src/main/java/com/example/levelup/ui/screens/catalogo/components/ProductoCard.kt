@@ -28,9 +28,7 @@ import com.example.levelup.ui.theme.GamingColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/**
- * Card completa del producto con imagen, info y controles
- */
+// Card completa del producto con imagen, info y controles
 @Composable
 fun ProductoCard(
     productoUi: ProductoUiModel,
@@ -252,8 +250,6 @@ private fun FavoriteButton(
     // Efecto de partículas cuando se marca como favorito (opcional)
     if (localEsDeseado) {
         LaunchedEffect(localEsDeseado) {
-            // Aquí podrías agregar efectos adicionales como vibración
-            // HapticFeedback si lo necesitas
         }
     }
 }

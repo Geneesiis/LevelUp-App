@@ -13,9 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.levelup.ui.screens.catalogo.models.ProductoUiModel
 
-/**
- * Información del producto (nombre, precio, categoría)
- */
+//Información del producto (nombre, precio, categoría)
 @Composable
 fun ProductoInfo(
     productoUi: ProductoUiModel,

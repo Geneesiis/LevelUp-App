@@ -8,9 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
-/**
- * Fondo degradado para el catálogo
- */
+//Fondo degradado para el catálogo
 @Composable
 fun CatalogoBackground(
     content: @Composable () -> Unit

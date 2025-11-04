@@ -5,9 +5,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Brush
 import com.example.levelup.ui.theme.GamingColors
 
-/**
- * Animación de brillo pulsante
- */
+// Animación de brillo pulsante
 @Composable
 fun rememberGlowAnimation(): Float {
     val infiniteTransition = rememberInfiniteTransition(label = "glow")
@@ -22,9 +20,7 @@ fun rememberGlowAnimation(): Float {
     ).value
 }
 
-/**
- * Animación de escala para cards
- */
+//Animación de escala para cards
 @Composable
 fun rememberCardScaleAnimation(): State<Float> {
     return animateFloatAsState(
@@ -37,9 +33,7 @@ fun rememberCardScaleAnimation(): State<Float> {
     )
 }
 
-/**
- * Crea un brush con efecto de brillo
- */
+// Crea un brush con efecto de brillo
 fun createGlowBrush(alpha: Float): Brush {
     return Brush.linearGradient(
         colors = listOf(
@@ -51,9 +45,7 @@ fun createGlowBrush(alpha: Float): Brush {
     )
 }
 
-/**
- * Crea un brush para bordes de productos
- */
+//Crea un brush para bordes de productos
 fun createProductBorderBrush(): Brush {
     return Brush.horizontalGradient(
         colors = listOf(

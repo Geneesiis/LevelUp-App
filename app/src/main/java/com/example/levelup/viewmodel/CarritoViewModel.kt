@@ -66,9 +66,7 @@ class CarritoViewModel : ViewModel() {
         cargarPedidos()
     }
 
-    /**
-     * Carga los pedidos desde Firebase
-     */
+    //Carga los pedidos desde Firebase
     private fun cargarPedidos() {
         viewModelScope.launch {
             try {
@@ -97,7 +95,7 @@ class CarritoViewModel : ViewModel() {
         }
     }
 
-    // FUNCIONES DE BÚSQUEDA CORREGIDAS
+    // Funciones de busqueda
     fun actualizarBusqueda(texto: String) {
         _textoBusqueda.value = texto
     }
@@ -156,7 +154,7 @@ class CarritoViewModel : ViewModel() {
         return _carrito.value.find { it.producto.id == productoId }?.cantidad ?: 0
     }
 
-    // Funciones de deseados - OPTIMIZADAS
+    // Funciones de deseados
     fun agregarADeseados(producto: Producto) {
         if (!_deseadosIds.value.contains(producto.id)) {
             _deseadosIds.value = _deseadosIds.value + producto.id
@@ -171,7 +169,7 @@ class CarritoViewModel : ViewModel() {
         }
     }
 
-    // OPTIMIZADO: Toggle instantáneo con Set
+    // Toggle instantáneo con Set
     fun toggleDeseado(producto: Producto) {
         viewModelScope.launch {
             if (_deseadosIds.value.contains(producto.id)) {
@@ -184,7 +182,6 @@ class CarritoViewModel : ViewModel() {
         }
     }
 
-    // OPTIMIZADO: Búsqueda O(1) en lugar de O(n)
     fun esDeseado(productoId: String): Boolean {
         return _deseadosIds.value.contains(productoId)
     }
@@ -212,11 +209,9 @@ class CarritoViewModel : ViewModel() {
         vaciarDeseados()
     }
 
-    // ==================== FUNCIONES DE HISTORIAL ====================
+    // FUNCIONES DE HISTORIAL
 
-    /**
-     * Confirma la compra y guarda en Firebase
-     */
+    // Confirma la compra y guarda en Firebase
     fun confirmarCompra(metodoPago: String = "Tarjeta", direccion: String = "Dirección por defecto") {
         if (_carrito.value.isEmpty()) return
 
@@ -246,16 +241,12 @@ class CarritoViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Obtiene un pedido por su ID
-     */
+    // Obtiene un pedido por su ID
     fun obtenerPedido(pedidoId: String): Pedido? {
         return _historial.value.find { it.id == pedidoId }
     }
 
-    /**
-     * Actualiza el estado de un pedido en Firebase
-     */
+    //Actualiza el estado de un pedido en Firebase
     fun actualizarEstadoPedido(pedidoId: String, nuevoEstado: EstadoPedido) {
         viewModelScope.launch {
             try {
@@ -279,9 +270,7 @@ class CarritoViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Actualiza el stock de un producto (solo admin)
-     */
+    //Actualiza el stock de un producto (solo admin)
     fun actualizarStockProducto(productoId: String, nuevoStock: Int) {
         viewModelScope.launch {
             try {
@@ -303,9 +292,7 @@ class CarritoViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Cancela un pedido (solo si está en estado PENDIENTE o CONFIRMADO)
-     */
+    //Cancela un pedido (solo si está en estado PENDIENTE o CONFIRMADO)
     fun cancelarPedido(pedidoId: String): Boolean {
         val pedido = obtenerPedido(pedidoId) ?: return false
 
@@ -315,9 +302,7 @@ class CarritoViewModel : ViewModel() {
         return true
     }
 
-    /**
-     * Recomprar - Agrega todos los productos de un pedido al carrito
-     */
+    //Recomprar - Agrega todos los productos de un pedido al carrito
     fun recomprarPedido(pedido: Pedido) {
         pedido.productos.forEach { item ->
             // Verificar que el producto aún exista y tenga stock
@@ -330,34 +315,26 @@ class CarritoViewModel : ViewModel() {
         }
     }
 
-    /**
-     * Obtiene el total gastado en todos los pedidos
-     */
+    //Obtiene el total gastado en todos los pedidos
     fun obtenerTotalGastado(): Double {
         return _historial.value
             .filter { it.estado != EstadoPedido.CANCELADO }
             .sumOf { it.total }
     }
 
-    /**
-     * Obtiene la cantidad de pedidos realizados
-     */
+    //Obtiene la cantidad de pedidos realizados
     fun obtenerCantidadPedidos(): Int {
         return _historial.value
             .filter { it.estado != EstadoPedido.CANCELADO }
             .size
     }
 
-    /**
-     * Obtiene pedidos filtrados por estado
-     */
+    // Obtiene pedidos filtrados por estado
     fun obtenerPedidosPorEstado(estado: EstadoPedido): List<Pedido> {
         return _historial.value.filter { it.estado == estado }
     }
 
-    /**
-     * Limpia todo el historial (usar con cuidado)
-     */
+    // Limpia todo el historial
     fun limpiarHistorial() {
         _historial.value = emptyList()
     }

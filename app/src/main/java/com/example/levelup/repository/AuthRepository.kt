@@ -85,9 +85,7 @@ class AuthRepository {
         }
     }
 
-    /**
-     * Registro de nuevo usuario
-     */
+    //Registro de nuevo usuario
     suspend fun registrar(nombre: String, correo: String, clave: String): User? {
         return try {
             // Crear usuario en Firebase Auth
@@ -116,9 +114,7 @@ class AuthRepository {
         }
     }
 
-    /**
-     * Cerrar sesión
-     */
+    //Cerrar sesión
     fun logout() {
         auth.signOut()
     }

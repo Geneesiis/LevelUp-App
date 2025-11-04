@@ -19,9 +19,7 @@ import com.example.levelup.ui.theme.AppDimensions
 import com.example.levelup.ui.theme.AppTypography
 import com.example.levelup.ui.theme.GamingColors
 
-/**
- * Botón circular con icono (perfil, carrito, etc)
- */
+//Botón circular con icono (perfil, carrito, etc)
 @Composable
 fun CircularIconButton(
     icon: ImageVector,
@@ -72,9 +70,7 @@ fun CircularIconButton(
     }
 }
 
-/**
- * Item de estadística (productos, carrito, etc)
- */
+//Item de estadística (productos, carrito, etc)
 @Composable
 fun StatsItem(
     icon: ImageVector,
@@ -102,9 +98,7 @@ fun StatsItem(
     }
 }
 
-/**
- * Divisor vertical
- */
+//Divisor vertical
 @Composable
 fun VerticalDivider(
     modifier: Modifier = Modifier
@@ -117,9 +111,7 @@ fun VerticalDivider(
     )
 }
 
-/**
- * Indicador de estado online
- */
+//Indicador de estado online
 @Composable
 fun OnlineIndicator(
     glowAlpha: Float,
@@ -148,9 +140,7 @@ fun OnlineIndicator(
     }
 }
 
-/**
- * Chip de categoría
- */
+//Chip de categoría
 @Composable
 fun CategoryChip(
     text: String,
@@ -172,9 +162,7 @@ fun CategoryChip(
     }
 }
 
-/**
- * Chip de precio con icono
- */
+//Chip de precio con icono
 @Composable
 fun PriceChip(
     precio: String,
@@ -215,9 +203,7 @@ fun PriceChip(
     }
 }
 
-/**
- * Badge de stock con icono
- */
+//Badge de stock con icono
 @Composable
 fun StockBadge(
     stock: Int,
@@ -245,9 +231,7 @@ fun StockBadge(
     }
 }
 
-/**
- * Chip de estado (LÍMITE, ÚLTIMAS, etc)
- */
+//Chip de estado (LÍMITE, ÚLTIMAS, etc)
 @Composable
 fun StatusChip(
     text: String,
@@ -290,9 +274,7 @@ fun StatusChip(
     }
 }
 
-/**
- * Botón de acción circular (agregar, eliminar)
- */
+// Botón de acción circular (agregar, eliminar)
 @Composable
 fun RoundActionButton(
     icon: ImageVector,

@@ -3,9 +3,7 @@ package com.example.levelup.ui.screens.catalogo.models
 import com.example.levelup.model.Producto
 import com.example.levelup.model.ItemCarrito
 
-/**
- * Estado de UI para la pantalla de catálogo
- */
+//Estado de UI para la pantalla de catálogo
 data class CatalogoUiState(
     val productos: List<ProductoUiModel> = emptyList(),
     val cargando: Boolean = false,
@@ -13,9 +11,7 @@ data class CatalogoUiState(
     val cantidadTotalEnCarrito: Int = 0
 )
 
-/**
- * Modelo de UI para un producto con información calculada
- */
+// Modelo de UI para un producto con información calculada
 data class ProductoUiModel(
     val producto: Producto,
     val cantidadEnCarrito: Int = 0,
@@ -25,9 +21,7 @@ data class ProductoUiModel(
     val precioFormateado: String = ""
 )
 
-/**
- * Convierte lista de productos y carrito a modelos de UI
- */
+// Convierte lista de productos y carrito a modelos de UI
 fun createProductosUiModels(
     productos: List<Producto>,
     carrito: List<ItemCarrito>

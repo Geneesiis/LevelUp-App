@@ -19,9 +19,7 @@ import com.example.levelup.ui.screens.catalogo.utils.rememberGlowAnimation
 import com.example.levelup.ui.theme.AppDimensions
 import com.example.levelup.ui.theme.GamingColors
 
-/**
- * Header del catálogo con logo, estadísticas y acciones
- */
+// Header del catálogo con logo, estadísticas y acciones
 @Composable
 fun CatalogoHeader(
     cantidadEnCarrito: Int,

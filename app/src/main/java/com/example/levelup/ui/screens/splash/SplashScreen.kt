@@ -19,11 +19,11 @@ import androidx.compose.ui.graphics.Color
 
 @Composable
 fun SplashSplash() {
-    // --- Animaciones ---
+    // Animaciones
     val scale = remember { Animatable(0.5f) }   // comienza con scale(.5)
     val alpha = remember { Animatable(0f) }     // comienza invisible
 
-    // --- Lanzamos las animaciones ---
+    // Lanzamos las animaciones
     LaunchedEffect(Unit) {
         // Escala del logo
         scale.animateTo(
@@ -48,7 +48,7 @@ fun SplashSplash() {
         delay(1000)
     }
 
-    // --- UI del Splash ---
+    // UI del Splash
     Box(
         modifier = Modifier
             .fillMaxSize()

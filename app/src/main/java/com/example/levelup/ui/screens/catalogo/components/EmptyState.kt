@@ -14,9 +14,7 @@ import androidx.compose.ui.unit.sp
 import com.example.levelup.ui.theme.AppDimensions
 import com.example.levelup.ui.theme.GamingColors
 
-/**
- * Estado vacío del catálogo
- */
+//Estado vacío del catálogo
 @Composable
 fun EmptyState() {
     Box(

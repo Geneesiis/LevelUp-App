@@ -80,7 +80,7 @@ fun PagoConfirmacionScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // UN SOLO BOTÓN - Versión mejorada
+            // Botón
             Button(
                 onClick = onVolverAlPerfil,
                 modifier = Modifier
