@@ -1,68 +1,61 @@
 package com.example.levelup.repository
 
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthUserCollisionException
-import com.google.firebase.auth.FirebaseAuthWeakPasswordException
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
-import java.text.SimpleDateFormat
-import java.util.*
+import com.example.levelup.data.local.UserDao
+import com.example.levelup.model.User
 
-class UsuarioRepository {
-    private val auth = FirebaseAuth.getInstance()
-    private val db = FirebaseFirestore.getInstance()
+class UsuarioRepository(private val userDao: UserDao) {
 
-    suspend fun registroUsuario(correo: String, clave: String, nombre: String): Boolean {
-        return try {
-            // Intentar crear usuario en Firebase Auth
-            val resultado = auth.createUserWithEmailAndPassword(correo, clave).await()
-            val user = resultado.user
-
-            if (user != null) {
-                // Guardar datos adicionales en Firestore
-                val userData = hashMapOf(
-                    "correo" to correo,
-                    "nombre" to nombre,
-                    "rol" to "cliente",
-                    "fechaRegistro" to getCurrentDate()
-                )
-
-                db.collection("Usuario").document(user.uid).set(userData).await()
-                true
-            } else {
-                throw Exception("Error al crear el usuario")
-            }
-
-        } catch (e: FirebaseAuthUserCollisionException) {
-            // El correo ya está registrado
-            throw Exception("Este correo ya está registrado")
-
-        } catch (e: FirebaseAuthWeakPasswordException) {
-            // Contraseña muy débil (menos de 6 caracteres)
-            throw Exception("La contraseña debe tener al menos 6 caracteres")
-
-        } catch (e: FirebaseAuthInvalidCredentialsException) {
-            // Formato de correo inválido
-            throw Exception("El formato del correo es inválido")
-
+    // Registrar usuario en Room (llamado desde AuthViewModel)
+    suspend fun registroUsuario(usuario: User) {
+        try {
+            userDao.insert(usuario)
         } catch (e: Exception) {
-            // Otros errores de Firebase o red
-            when {
-                e.message?.contains("email address is already in use", ignoreCase = true) == true ->
-                    throw Exception("Este correo ya está registrado")
-                e.message?.contains("email address is badly formatted", ignoreCase = true) == true ->
-                    throw Exception("El formato del correo es inválido")
-                e.message?.contains("network", ignoreCase = true) == true ->
-                    throw Exception("Error de conexión. Verifica tu internet")
-                else ->
-                    throw Exception(e.message ?: "Error al registrar usuario")
-            }
+            throw Exception("Error al guardar usuario: ${e.message}")
         }
     }
 
-    private fun getCurrentDate(): String {
-        val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
-        return sdf.format(Date())
+    // Obtener usuario por ID
+    suspend fun obtenerUsuario(userId: String): User? {
+        return try {
+            userDao.getUserById(userId)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    // Obtener usuario por email
+    suspend fun obtenerUsuarioPorEmail(email: String): User? {
+        return try {
+            userDao.getUserByEmail(email)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    // Obtener todos los usuarios
+    suspend fun obtenerTodosLosUsuarios(): List<User> {
+        return try {
+            userDao.getAllUsers()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    // Actualizar usuario
+    suspend fun actualizarUsuario(usuario: User) {
+        try {
+            userDao.update(usuario)
+        } catch (e: Exception) {
+            throw Exception("Error al actualizar usuario: ${e.message}")
+        }
+    }
+
+    // Eliminar usuario
+    suspend fun eliminarUsuario(usuario: User) {
+        try {
+            userDao.delete(usuario)
+        } catch (e: Exception) {
+            throw Exception("Error al eliminar usuario: ${e.message}")
+        }
     }
 }

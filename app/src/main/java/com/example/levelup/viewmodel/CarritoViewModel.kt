@@ -2,340 +2,196 @@ package com.example.levelup.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.levelup.model.EstadoPedido
 import com.example.levelup.model.ItemCarrito
 import com.example.levelup.model.Pedido
 import com.example.levelup.model.Producto
-import com.example.levelup.model.EstadoPedido
 import com.example.levelup.repository.PedidoRepository
 import com.example.levelup.repository.ProductoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import com.example.levelup.ui.screens.admin.ProductosAdminScreen
-import com.example.levelup.ui.screens.admin.PedidosAdminScreen
+import java.util.Date
 
-class CarritoViewModel : ViewModel() {
-    private val repository = ProductoRepository()
-    private val pedidoRepository = PedidoRepository()
+class CarritoViewModel(
+    private val productoRepository: ProductoRepository,
+    private val pedidoRepository: PedidoRepository
+) : ViewModel() {
 
-    private val _productos = MutableStateFlow<List<Producto>>(emptyList())
-    val productos: StateFlow<List<Producto>> = _productos
+    // --- BÚSQUEDA ---
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    private val _carrito = MutableStateFlow<List<ItemCarrito>>(emptyList())
-    val carrito: StateFlow<List<ItemCarrito>> = _carrito
+    private val _productosOriginales = productoRepository.getProductos()
 
-    // Historial de pedidos
-    private val _historial = MutableStateFlow<List<Pedido>>(emptyList())
-    val historial: StateFlow<List<Pedido>> = _historial
-
-    // Cambio: Usar Set para búsquedas más rápidas
-    private val _deseadosIds = MutableStateFlow<Set<String>>(emptySet())
-    private val _deseados = MutableStateFlow<List<Producto>>(emptyList())
-    val deseados: StateFlow<List<Producto>> = _deseados
-
-    private val _cargando = MutableStateFlow(false)
-    val cargando: StateFlow<Boolean> = _cargando
-
-    // Estado para el buscador
-    private val _textoBusqueda = MutableStateFlow("")
-    val textoBusqueda: StateFlow<String> = _textoBusqueda
-
-    // Productos filtrados por búsqueda (CORREGIDO - sin debounce)
-    val productosFiltrados: StateFlow<List<Producto>> = combine(
-        _productos,
-        _textoBusqueda
-    ) { productos, busqueda ->
-        if (busqueda.isBlank()) {
-            productos
-        } else {
-            productos.filter { producto ->
-                producto.nombre.contains(busqueda, ignoreCase = true) ||
-                        producto.descripcion.contains(busqueda, ignoreCase = true)
+    val productos: StateFlow<List<Producto>> = _searchQuery
+        .combine(_productosOriginales) { query, productos ->
+            if (query.isBlank()) {
+                productos
+            } else {
+                productos.filter { it.nombre.contains(query, ignoreCase = true) }
             }
         }
-    }.stateIn(
-        scope = viewModelScope,
-        started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
-    )
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    // --- CARRITO ---
+    private val _carrito = MutableStateFlow<List<Producto>>(emptyList())
+    val carrito: StateFlow<List<Producto>> = _carrito.asStateFlow()
+
+    // --- DESEADOS ---
+    private val _deseados = MutableStateFlow<List<Producto>>(emptyList())
+    val deseados: StateFlow<List<Producto>> = _deseados.asStateFlow()
+
+    // --- HISTORIAL DE PEDIDOS ---
+    private val _historialPedidos = MutableStateFlow<List<Pedido>>(emptyList())
+    val historialPedidos: StateFlow<List<Pedido>> = _historialPedidos.asStateFlow()
+
+    // Alias para compatibilidad con HistorialScreen
+    val historial: StateFlow<List<Pedido>> = historialPedidos
 
     init {
-        cargarProductos()
-        cargarPedidos()
-    }
-
-    //Carga los pedidos desde Firebase
-    private fun cargarPedidos() {
         viewModelScope.launch {
-            try {
-                val resultado = pedidoRepository.obtenerPedidos()
-                resultado.onSuccess { pedidos ->
-                    _historial.value = pedidos
-                }.onFailure { error ->
-                    error.printStackTrace()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-    fun cargarProductos() {
-        _cargando.value = true
-        viewModelScope.launch {
-            try {
-                val resultado = repository.obtenerProductos()
-                _productos.value = resultado.productos
-            } catch (e: Exception) {
-                e.printStackTrace()
-            } finally {
-                _cargando.value = false
+            pedidoRepository.getPedidos().collect { pedidos ->
+                _historialPedidos.value = pedidos
             }
         }
     }
 
-    // Funciones de busqueda
-    fun actualizarBusqueda(texto: String) {
-        _textoBusqueda.value = texto
+    fun onSearchQueryChanged(query: String) {
+        _searchQuery.value = query
     }
 
-    fun limpiarBusqueda() {
-        _textoBusqueda.value = ""
-    }
-
-    // Funciones del carrito
+    // --- Funciones de Carrito ---
     fun agregarAlCarrito(producto: Producto) {
-        val productoEnCatalogo = _productos.value.find { it.id == producto.id } ?: return
-        val cantidadEnCarrito = _carrito.value.find { it.producto.id == producto.id }?.cantidad ?: 0
+        _carrito.value = _carrito.value + producto
+    }
 
-        if (cantidadEnCarrito < productoEnCatalogo.stock) {
-            _carrito.value = _carrito.value.find { it.producto.id == producto.id }?.let {
-                _carrito.value.map { item ->
-                    if (item.producto.id == producto.id) {
-                        item.copy(cantidad = item.cantidad + 1)
-                    } else {
-                        item
-                    }
-                }
-            } ?: (_carrito.value + ItemCarrito(producto = producto, cantidad = 1))
-        }
+    fun eliminarDelCarrito(producto: Producto) {
+        _carrito.value = _carrito.value - producto
     }
 
     fun removerDelCarrito(producto: Producto) {
-        val itemExistente = _carrito.value.find { it.producto.id == producto.id } ?: return
-
-        _carrito.value = if (itemExistente.cantidad > 1) {
-            _carrito.value.map { item ->
-                if (item.producto.id == producto.id) {
-                    item.copy(cantidad = item.cantidad - 1)
-                } else {
-                    item
-                }
-            }
-        } else {
-            _carrito.value.filter { it.producto.id != producto.id }
+        val index = _carrito.value.indexOfFirst { it.id == producto.id }
+        if (index >= 0) {
+            _carrito.value = _carrito.value.toMutableList().also { it.removeAt(index) }
         }
-    }
-
-    fun eliminarProductoDelCarrito(producto: Producto) {
-        _carrito.value = _carrito.value.filter { it.producto.id != producto.id }
     }
 
     fun vaciarCarrito() {
         _carrito.value = emptyList()
     }
 
-    fun obtenerTotal(): Double {
-        return _carrito.value.sumOf { it.producto.precio * it.cantidad }
-    }
-
-    fun obtenerCantidadEnCarrito(productoId: String): Int {
-        return _carrito.value.find { it.producto.id == productoId }?.cantidad ?: 0
-    }
-
-    // Funciones de deseados
+    // --- Funciones de Deseados ---
     fun agregarADeseados(producto: Producto) {
-        if (!_deseadosIds.value.contains(producto.id)) {
-            _deseadosIds.value = _deseadosIds.value + producto.id
+        if (!_deseados.value.contains(producto)) {
             _deseados.value = _deseados.value + producto
         }
     }
 
-    fun removerDeDeseados(producto: Producto) {
-        if (_deseadosIds.value.contains(producto.id)) {
-            _deseadosIds.value = _deseadosIds.value - producto.id
-            _deseados.value = _deseados.value.filter { it.id != producto.id }
-        }
+    fun eliminarDeDeseados(producto: Producto) {
+        _deseados.value = _deseados.value - producto
     }
 
-    // Toggle instantáneo con Set
     fun toggleDeseado(producto: Producto) {
-        viewModelScope.launch {
-            if (_deseadosIds.value.contains(producto.id)) {
-                _deseadosIds.value = _deseadosIds.value - producto.id
-                _deseados.value = _deseados.value.filter { it.id != producto.id }
-            } else {
-                _deseadosIds.value = _deseadosIds.value + producto.id
-                _deseados.value = _deseados.value + producto
-            }
+        if (_deseados.value.contains(producto)) {
+            eliminarDeDeseados(producto)
+        } else {
+            agregarADeseados(producto)
         }
-    }
-
-    fun esDeseado(productoId: String): Boolean {
-        return _deseadosIds.value.contains(productoId)
-    }
-
-    fun moverDeseadoAlCarrito(producto: Producto) {
-        agregarAlCarrito(producto)
-        removerDeDeseados(producto)
     }
 
     fun vaciarDeseados() {
-        _deseadosIds.value = emptySet()
         _deseados.value = emptyList()
     }
 
-    // Función para obtener todos los productos deseados
-    fun obtenerDeseados(): List<Producto> {
-        return _deseados.value
+    fun moverDeseadoAlCarrito(producto: Producto) {
+        if (producto.stock > 0) {
+            agregarAlCarrito(producto)
+            eliminarDeDeseados(producto)
+        }
     }
 
-    // Función para agregar múltiples deseados al carrito
     fun moverTodosDeseadosAlCarrito() {
-        _deseados.value.forEach { producto ->
+        val productosDisponibles = _deseados.value.filter { it.stock > 0 }
+        productosDisponibles.forEach { producto ->
             agregarAlCarrito(producto)
         }
-        vaciarDeseados()
+        _deseados.value = _deseados.value.filter { it.stock == 0 }
     }
 
-    // FUNCIONES DE HISTORIAL
-
-    // Confirma la compra y guarda en Firebase
-    fun confirmarCompra(metodoPago: String = "Tarjeta", direccion: String = "Dirección por defecto") {
-        if (_carrito.value.isEmpty()) return
-
-        val pedido = Pedido(
-            productos = _carrito.value.map { it.copy() },
-            total = obtenerTotal(),
-            estado = EstadoPedido.CONFIRMADO,
-            metodoPago = metodoPago,
-            direccionEntrega = direccion
-        )
-
+    // --- Funciones de Pedidos ---
+    fun realizarPedido(usuarioId: String) {
         viewModelScope.launch {
-            try {
-                // Guardar en Firebase
-                val resultado = pedidoRepository.guardarPedido(pedido)
-                resultado.onSuccess {
-                    // Actualizar lista local
-                    _historial.value = listOf(pedido) + _historial.value
-                    // Vaciar carrito
-                    vaciarCarrito()
-                }.onFailure { error ->
-                    error.printStackTrace()
+            val productosEnCarrito = _carrito.value
+            if (productosEnCarrito.isEmpty()) return@launch
+
+            val totalPedido = productosEnCarrito.sumOf { it.precio }
+
+            val itemsParaPedido = productosEnCarrito
+                .groupBy { it.id }
+                .map { (_, productosAgrupados) ->
+                    ItemCarrito(
+                        producto = productosAgrupados.first(),
+                        cantidad = productosAgrupados.size
+                    )
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+
+            val nuevoPedido = Pedido(
+                id = "",
+                clienteId = usuarioId,
+                productos = itemsParaPedido,
+                total = totalPedido,
+                fecha = Date(),
+                estado = EstadoPedido.PENDIENTE
+            )
+
+            pedidoRepository.addPedido(nuevoPedido)
+            vaciarCarrito()
         }
     }
 
-    // Obtiene un pedido por su ID
-    fun obtenerPedido(pedidoId: String): Pedido? {
-        return _historial.value.find { it.id == pedidoId }
-    }
-
-    //Actualiza el estado de un pedido en Firebase
-    fun actualizarEstadoPedido(pedidoId: String, nuevoEstado: EstadoPedido) {
+    fun actualizarEstadoPedido(pedidoId: String, nuevoEstado: String) {
         viewModelScope.launch {
-            try {
-                // Actualizar en Firebase
-                val resultado = pedidoRepository.actualizarEstadoPedido(pedidoId, nuevoEstado)
-                resultado.onSuccess {
-                    // Actualizar lista local
-                    _historial.value = _historial.value.map { pedido ->
-                        if (pedido.id == pedidoId) {
-                            pedido.copy(estado = nuevoEstado)
-                        } else {
-                            pedido
-                        }
-                    }
-                }.onFailure { error ->
-                    error.printStackTrace()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            pedidoRepository.updateEstadoPedido(pedidoId, nuevoEstado)
         }
     }
 
-    //Actualiza el stock de un producto (solo admin)
     fun actualizarStockProducto(productoId: String, nuevoStock: Int) {
         viewModelScope.launch {
-            try {
-                // Actualizar en Firebase
-                val resultado = repository.actualizarStock(productoId, nuevoStock)
-                if (resultado) {
-                    // Actualizar lista local
-                    _productos.value = _productos.value.map { producto ->
-                        if (producto.id == productoId) {
-                            producto.copy(stock = nuevoStock)
-                        } else {
-                            producto
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            productoRepository.actualizarStock(productoId, nuevoStock)
         }
     }
 
-    //Cancela un pedido (solo si está en estado PENDIENTE o CONFIRMADO)
-    fun cancelarPedido(pedidoId: String): Boolean {
-        val pedido = obtenerPedido(pedidoId) ?: return false
-
-        if (!pedido.puedeCancelarse()) return false
-
-        actualizarEstadoPedido(pedidoId, EstadoPedido.CANCELADO)
-        return true
+    // --- FUNCIONES PARA HISTORIAL ---
+    fun obtenerCantidadPedidos(): Int {
+        return _historialPedidos.value.size
     }
 
-    //Recomprar - Agrega todos los productos de un pedido al carrito
-    fun recomprarPedido(pedido: Pedido) {
-        pedido.productos.forEach { item ->
-            // Verificar que el producto aún exista y tenga stock
-            val productoActual = _productos.value.find { it.id == item.producto.id }
-            if (productoActual != null && productoActual.stock > 0) {
-                repeat(item.cantidad.coerceAtMost(productoActual.stock)) {
-                    agregarAlCarrito(productoActual)
-                }
-            }
-        }
-    }
-
-    //Obtiene el total gastado en todos los pedidos
     fun obtenerTotalGastado(): Double {
-        return _historial.value
+        return _historialPedidos.value
             .filter { it.estado != EstadoPedido.CANCELADO }
             .sumOf { it.total }
     }
 
-    //Obtiene la cantidad de pedidos realizados
-    fun obtenerCantidadPedidos(): Int {
-        return _historial.value
-            .filter { it.estado != EstadoPedido.CANCELADO }
-            .size
+    fun recomprarPedido(pedido: Pedido) {
+        pedido.productos.forEach { item ->
+            repeat(item.cantidad) {
+                agregarAlCarrito(item.producto)
+            }
+        }
     }
 
-    // Obtiene pedidos filtrados por estado
-    fun obtenerPedidosPorEstado(estado: EstadoPedido): List<Pedido> {
-        return _historial.value.filter { it.estado == estado }
-    }
-
-    // Limpia todo el historial
-    fun limpiarHistorial() {
-        _historial.value = emptyList()
+    fun cancelarPedido(pedidoId: String) {
+        viewModelScope.launch {
+            pedidoRepository.updateEstadoPedido(pedidoId, EstadoPedido.CANCELADO.name)
+        }
     }
 }

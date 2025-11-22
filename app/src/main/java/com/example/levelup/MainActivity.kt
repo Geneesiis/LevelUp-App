@@ -17,20 +17,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import com.example.levelup.di.AppContainer
 import com.example.levelup.navigation.AppNavegacion
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val appContainer = (application as LevelUpApplication).container
         setContent {
-            MyApp()
+            MyApp(appContainer)
         }
     }
 }
 
 @Composable
-fun MyApp(){
+fun MyApp(container: AppContainer){
     var showLogin by rememberSaveable { mutableStateOf(false) }
 
     val handler = remember { Handler(Looper.getMainLooper()) }
@@ -44,7 +48,7 @@ fun MyApp(){
                 SplashSplash()
             } else {
                 //LoginScreen()
-                AppNavegacion()
+                AppNavegacion(container)
             }
         }
     }

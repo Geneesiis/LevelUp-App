@@ -1,45 +1,40 @@
 package com.example.levelup.ui.screens.catalogo.components
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.levelup.ui.screens.catalogo.models.ProductoUiModel
+import java.text.NumberFormat
+import java.util.*
 
-//Información del producto (nombre, precio, categoría)
 @Composable
-fun ProductoInfo(
-    productoUi: ProductoUiModel,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier) {
-        CategoryChip(text = "TECH GEAR")
-
-        Spacer(modifier = Modifier.height(6.dp))
-
+fun ProductoInfo(nombre: String, precio: Double) {
+    Column(modifier = Modifier.padding(12.dp)) {
         Text(
-            text = productoUi.producto.nombre.uppercase(),
-            fontWeight = FontWeight.Black,
-            color = Color.White,
-            letterSpacing = 0.5.sp,
+            text = nombre,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
             maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            lineHeight = 18.sp,
-            fontSize = 15.sp
+            color = Color.White
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        PriceChip(
-            precio = productoUi.precioFormateado,
-            icon = Icons.Default.Star
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = formatPrecioCLP(precio),
+            fontSize = 14.sp,
+            color = Color(0xFF00C853)
         )
     }
+}
+
+private fun formatPrecioCLP(precio: Double): String {
+    return NumberFormat.getCurrencyInstance(Locale("es", "CL")).apply {
+        maximumFractionDigits = 0
+    }.format(precio)
 }

@@ -1,3 +1,4 @@
+
 package com.example.levelup.ui.screens.catalogo
 
 import androidx.compose.animation.core.*
@@ -26,13 +27,14 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.levelup.model.Producto
 import com.example.levelup.ui.screens.catalogo.utils.FormatUtils.formatPrecioCLP
+import com.example.levelup.viewmodel.CarritoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetalleProductoScreen(
     producto: Producto,
-    onVolverAlCatalogo: () -> Unit = {},
-    onAgregarAlCarrito: () -> Unit = {}
+    viewModel: CarritoViewModel,
+    onBack: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -88,7 +90,7 @@ fun DetalleProductoScreen(
                         modifier = Modifier.size(40.dp),
                         shape = CircleShape,
                         color = Color(0xFF1A0000),
-                        onClick = onVolverAlCatalogo
+                        onClick = onBack
                     ) {
                         Box(
                             contentAlignment = Alignment.Center,
@@ -312,7 +314,7 @@ fun DetalleProductoScreen(
 
                 // Botón Agregar al Carrito
                 Button(
-                    onClick = onAgregarAlCarrito,
+                    onClick = { viewModel.agregarAlCarrito(producto) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(60.dp),

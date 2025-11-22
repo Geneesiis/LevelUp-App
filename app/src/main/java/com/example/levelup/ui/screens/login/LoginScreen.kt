@@ -19,55 +19,37 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import com.example.levelup.R
-
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.levelup.repository.AuthRepository
-import com.example.levelup.viewmodel.LoginViewModel
+import com.example.levelup.model.User
+import com.example.levelup.viewmodel.AuthState
+import com.example.levelup.viewmodel.AuthViewModel
 
 @Composable
 fun LoginScreen(
-    onRegisterClick: () -> Unit = {},
-    onLoginSuccess: (User: com.example.levelup.model.User) -> Unit = {}
-){ //Función de inicio sesión
+    authViewModel: AuthViewModel,
+    onRegisterClick: () -> Unit,
+    onLoginSuccess: (User) -> Unit
+) {
     val context = LocalContext.current
     var correo by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
 
-    val viewModel: LoginViewModel = viewModel()
-    val user by viewModel.user.collectAsState()
-    val carga by viewModel.cargaLogin.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val authState by authViewModel.authState.collectAsState()
 
-    //Variable de conexión al Auth
-    val repositorio = AuthRepository()
-
-    LaunchedEffect(key1 = user) {
-        if (user != null) {
-            val mensaje = when (user?.rol) {
-                "admin" -> "Bienvenido Admin: ${user?.nombre}"
-                else -> "Bienvenido: ${user?.nombre}"
+    LaunchedEffect(authState) {
+        when (val state = authState) {
+            is AuthState.Authenticated -> {
+                Toast.makeText(context, "Bienvenido ${state.user.nombre}", Toast.LENGTH_SHORT).show()
+                onLoginSuccess(state.user)
             }
-            Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show()
-            onLoginSuccess(user!!)
-        }
-    }
-
-    LaunchedEffect(key1 = error) {
-        error?.let { errorMessage ->
-            if (errorMessage.isNotEmpty()) {
-                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+            is AuthState.Error -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
+                authViewModel.clearError() // Limpiar el estado de error
             }
+            else -> Unit // No hacer nada en Loading o Unauthenticated
         }
     }
 
-    var showEmptyFieldsError by remember { mutableStateOf(false) }
-
-    LaunchedEffect(key1 = showEmptyFieldsError) {
-        if (showEmptyFieldsError) {
-            Toast.makeText(context, "Completa todos los campos", Toast.LENGTH_SHORT).show()
-            showEmptyFieldsError = false
-        }
-    }
+    val isLoading = authState is AuthState.Loading
 
     Box(
         modifier = Modifier
@@ -81,10 +63,11 @@ fun LoginScreen(
                     top = 32.dp,
                     start = 24.dp,
                     end = 24.dp,
-                    bottom = 24.dp),
+                    bottom = 24.dp
+                ),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
-        ){
+        ) {
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "App Logo",
@@ -93,14 +76,14 @@ fun LoginScreen(
                     .padding(bottom = 24.dp)
             )
 
-            Text("INICIAR SESIÓN",
+            Text(
+                "INICIAR SESIÓN",
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.Black,
                     color = Color(0xFF00FFAA) // Verde cyber
                 )
             )
 
-            // Campo USUARIO
             Spacer(Modifier.height(16.dp))
 
             OutlinedTextField(
@@ -116,7 +99,7 @@ fun LoginScreen(
                     )
                 },
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
                     focusedTextColor = Color.White,
@@ -131,7 +114,6 @@ fun LoginScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Campo CONTRASEÑA
             OutlinedTextField(
                 value = pass,
                 onValueChange = { pass = it },
@@ -161,14 +143,13 @@ fun LoginScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // Botón INGRESAR
             Button(
                 onClick = {
-                    if (correo.isEmpty() || pass.isEmpty()) {
-                        Toast.makeText(context, "Completar todos los datos", Toast.LENGTH_SHORT).show()
-                        return@Button
+                    if (correo.isBlank() || pass.isBlank()) {
+                        Toast.makeText(context, "Completa todos los campos", Toast.LENGTH_SHORT).show()
+                    } else {
+                        authViewModel.login(correo, pass)
                     }
-                    viewModel.login(correo, pass)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -176,29 +157,28 @@ fun LoginScreen(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF00FFAA),
                     contentColor = Color.Black,
-                    disabledContainerColor = Color(0xFF00FFAA),
-                    disabledContentColor = Color.Black
+                    disabledContainerColor = Color.Gray,
+                    disabledContentColor = Color.DarkGray
                 ),
                 elevation = ButtonDefaults.buttonElevation(
                     defaultElevation = 8.dp,
                     pressedElevation = 4.dp
                 ),
-                enabled = !carga
-            )
-            {
-                if (carga) {
+                enabled = !isLoading
+            ) {
+                if (isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
-                        color = Color.Gray,
+                        color = Color.Black,
                         strokeWidth = 3.dp
                     )
                 } else {
-                Text(
-                    "INGRESAR",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Black
+                    Text(
+                        "INGRESAR",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Black
+                        )
                     )
-                )
                 }
             }
 

@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.levelup.model.Producto
 import com.example.levelup.viewmodel.CarritoViewModel
 import java.text.NumberFormat
 import java.util.*
@@ -25,11 +25,23 @@ import java.util.*
 @Composable
 fun CarritoScreen(
     viewModel: CarritoViewModel,
+    usuarioId: String,
     onVolverAlCatalogo: () -> Unit = {},
     onConfirmarPago: () -> Unit = {}
 ) {
     val carrito by viewModel.carrito.collectAsState()
-    val total by remember { derivedStateOf { viewModel.obtenerTotal() } }
+
+    // Agrupar productos por ID y contar cantidades
+    val productosAgrupados = remember(carrito) {
+        carrito.groupBy { it.id }
+            .map { (_, productos) ->
+                productos.first() to productos.size
+            }
+    }
+
+    val total = remember(carrito) {
+        carrito.sumOf { it.precio }
+    }
 
     Box(
         modifier = Modifier
@@ -43,7 +55,8 @@ fun CarritoScreen(
                     top = 24.dp,
                     start = 16.dp,
                     end = 16.dp,
-                    bottom = 16.dp)
+                    bottom = 16.dp
+                )
         ) {
             // Header con botón volver
             Row(
@@ -108,10 +121,11 @@ fun CarritoScreen(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(carrito, key = { it.producto.id }) { item ->
-                        ItemCarrito(
-                            item = item,
-                            onEliminar = { viewModel.eliminarProductoDelCarrito(item.producto) }
+                    items(productosAgrupados, key = { it.first.id }) { (producto, cantidad) ->
+                        ItemCarritoCard(
+                            producto = producto,
+                            cantidad = cantidad,
+                            onEliminar = { viewModel.eliminarDelCarrito(producto) }
                         )
                     }
                 }
@@ -141,7 +155,7 @@ fun CarritoScreen(
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = carrito.sumOf { it.cantidad }.toString(),
+                                text = carrito.size.toString(),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = Color.White,
                                 fontWeight = FontWeight.Bold
@@ -161,7 +175,7 @@ fun CarritoScreen(
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = formatPrecioCLP(total), // Formato CLP
+                                text = formatPrecioCLP(total),
                                 style = MaterialTheme.typography.headlineSmall,
                                 color = Color(0xFF00FFAA),
                                 fontWeight = FontWeight.Black
@@ -199,7 +213,7 @@ fun CarritoScreen(
                             // Botón confirmar compra
                             Button(
                                 onClick = {
-                                    viewModel.confirmarCompra()
+                                    viewModel.realizarPedido(usuarioId)
                                     onConfirmarPago()
                                 },
                                 modifier = Modifier.weight(1.5f),
@@ -246,8 +260,9 @@ fun CarritoScreen(
 }
 
 @Composable
-fun ItemCarrito(
-    item: com.example.levelup.model.ItemCarrito,
+fun ItemCarritoCard(
+    producto: Producto,
+    cantidad: Int,
     onEliminar: () -> Unit
 ) {
     Card(
@@ -268,7 +283,7 @@ fun ItemCarrito(
             ) {
                 // Nombre del producto
                 Text(
-                    text = item.producto.nombre,
+                    text = producto.nombre,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -278,7 +293,7 @@ fun ItemCarrito(
 
                 // Precio unitario con formato CLP
                 Text(
-                    text = "Precio: ${formatPrecioCLP(item.producto.precio)} c/u",
+                    text = "Precio: ${formatPrecioCLP(producto.precio)} c/u",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color(0xFF888888)
                 )
@@ -287,7 +302,7 @@ fun ItemCarrito(
 
                 // Cantidad
                 Text(
-                    text = "Cantidad: ${item.cantidad}",
+                    text = "Cantidad: $cantidad",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color(0xFF00FFAA),
                     fontWeight = FontWeight.Medium
@@ -297,7 +312,7 @@ fun ItemCarrito(
 
                 // Subtotal con formato CLP
                 Text(
-                    text = "Subtotal: ${formatPrecioCLP(item.producto.precio * item.cantidad)}",
+                    text = "Subtotal: ${formatPrecioCLP(producto.precio * cantidad)}",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Black,
                     color = Color(0xFF00FFAA)
@@ -319,7 +334,7 @@ fun ItemCarrito(
     }
 }
 
-// Función para formatear precios en formato CLP (la misma que en CatalogoScreen)
+// Función para formatear precios en formato CLP
 fun formatPrecioCLP(precio: Double): String {
     val formatter = NumberFormat.getNumberInstance(Locale("es", "CL"))
     return "$${formatter.format(precio)}"

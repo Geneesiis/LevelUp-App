@@ -1,8 +1,14 @@
 package com.example.levelup.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "users")
 data class User(
-    val uid: String = "",
-    val correo: String = "",
+    @PrimaryKey
+    val id: String = "",
+    val email: String = "",
     val nombre: String = "",
-    val rol: String = ""
+    val password: String = "",
+    val isAdmin: Boolean = false
 )

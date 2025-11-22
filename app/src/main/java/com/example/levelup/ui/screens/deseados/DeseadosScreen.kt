@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.levelup.viewmodel.CarritoViewModel
 import com.example.levelup.ui.screens.catalogo.components.ProductoCard
-import com.example.levelup.ui.screens.catalogo.models.ProductoUiModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -195,7 +194,7 @@ fun DeseadosScreen(
                                                     modifier = Modifier.shadow(6.dp, CircleShape)
                                                 ) {
                                                     Text(
-                                                        carrito.sumOf { it.cantidad }.toString(),
+                                                        carrito.size.toString(),
                                                         color = Color.White,
                                                         fontWeight = FontWeight.Black,
                                                         fontSize = 11.sp
@@ -389,14 +388,6 @@ fun DeseadosScreen(
                     contentPadding = PaddingValues(vertical = 8.dp)
                 ) {
                     items(deseados, key = { it.id }) { producto ->
-                        val cantidadEnCarrito = carrito.find { it.producto.id == producto.id }?.cantidad ?: 0
-                        val productoUi = ProductoUiModel(
-                            producto = producto,
-                            cantidadEnCarrito = cantidadEnCarrito,
-                            stockDisponible = producto.stock - cantidadEnCarrito,
-                            disponible = producto.stock > 0
-                        )
-
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
@@ -404,14 +395,14 @@ fun DeseadosScreen(
                         ) {
                             Column {
                                 ProductoCard(
-                                    productoUi = productoUi,
-                                    onAgregar = { viewModel.agregarAlCarrito(producto) },
-                                    onRemover = { viewModel.removerDelCarrito(producto) },
-                                    onVerDetalle = {
+                                    producto = producto,
+                                    isDeseado = true,
+                                    onProductoClick = {
                                         navController.navigate("detalle_producto/${producto.id}")
                                     },
-                                    onToggleDeseado = { viewModel.toggleDeseado(producto) },
-                                    esDeseado = true
+                                    onAddToDeseados = {
+                                        viewModel.toggleDeseado(producto)
+                                    }
                                 )
 
                                 Spacer(modifier = Modifier.height(8.dp))

@@ -26,23 +26,20 @@ import com.example.levelup.viewmodel.CarritoViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilAdminScreen(
-    viewModel: CarritoViewModel,
-    nombre: String = "Administrador",
-    onLogout: () -> Unit = {},
-    onNavigateToProductos: () -> Unit = {},
-    onNavigateToPedidos: () -> Unit = {}
+    viewModel: CarritoViewModel, // Añadido para que coincida con Navegacion.kt
+    nombre: String,
+    onLogout: () -> Unit,
+    onNavigateToProductos: () -> Unit,
+    onNavigateToPedidos: () -> Unit
 ) {
-    // Obtener datos reales
     val productos by viewModel.productos.collectAsState()
-    val historial by viewModel.historial.collectAsState()
+    val historial by viewModel.historialPedidos.collectAsState()
 
-    // Calcular estadísticas reales
     val totalProductos = productos.size
     val totalPedidos = historial.size
     val pedidosPendientes = historial.count { it.estado == EstadoPedido.PENDIENTE }
     val productosStockBajo = productos.count { it.stock <= 5 }
 
-    // Animación simple
     val infiniteTransition = rememberInfiniteTransition(label = "admin_glow")
     val glowAlpha by infiniteTransition.animateFloat(
         initialValue = 0.3f,
@@ -78,7 +75,6 @@ fun PerfilAdminScreen(
                 ),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header Admin
             item {
                 Surface(
                     modifier = Modifier
@@ -103,7 +99,6 @@ fun PerfilAdminScreen(
                             modifier = Modifier.padding(20.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            // Icono Admin
                             Surface(
                                 shape = CircleShape,
                                 color = Color(0xFFFF0055).copy(alpha = 0.2f),
@@ -141,7 +136,6 @@ fun PerfilAdminScreen(
                 }
             }
 
-            // Estadísticas Reales
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -164,7 +158,6 @@ fun PerfilAdminScreen(
                 }
             }
 
-            // Alertas (si hay)
             if (pedidosPendientes > 0 || productosStockBajo > 0) {
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -186,7 +179,6 @@ fun PerfilAdminScreen(
                 }
             }
 
-            // Gestión Principal
             item {
                 Text(
                     "GESTIÓN",
@@ -216,7 +208,6 @@ fun PerfilAdminScreen(
                 )
             }
 
-            // Botón Cerrar Sesión
             item {
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -257,11 +248,7 @@ fun PerfilAdminScreen(
 
 @Composable
 private fun StatCard(
-    title: String,
-    value: String,
-    icon: ImageVector,
-    color: Color,
-    modifier: Modifier = Modifier
+    title: String, value: String, icon: ImageVector, color: Color, modifier: Modifier = Modifier
 ) {
     Surface(
         modifier = modifier.shadow(8.dp, RoundedCornerShape(12.dp)),
@@ -269,11 +256,7 @@ private fun StatCard(
         color = Color(0xFF0D0000)
     ) {
         Box(
-            modifier = Modifier.border(
-                1.dp,
-                color.copy(alpha = 0.3f),
-                RoundedCornerShape(12.dp)
-            )
+            modifier = Modifier.border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
         ) {
             Column(
                 modifier = Modifier
@@ -281,37 +264,17 @@ private fun StatCard(
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(
-                    icon,
-                    contentDescription = null,
-                    tint = color,
-                    modifier = Modifier.size(32.dp)
-                )
+                Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(32.dp))
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    value,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Black,
-                    color = color
-                )
-                Text(
-                    title,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF888888),
-                    letterSpacing = 1.sp
-                )
+                Text(value, fontSize = 24.sp, fontWeight = FontWeight.Black, color = color)
+                Text(title, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFF888888), letterSpacing = 1.sp)
             }
         }
     }
 }
 
 @Composable
-private fun AlertCard(
-    text: String,
-    icon: ImageVector,
-    color: Color
-) {
+private fun AlertCard(text: String, icon: ImageVector, color: Color) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
@@ -322,29 +285,14 @@ private fun AlertCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Icon(
-                icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(24.dp)
-            )
-            Text(
-                text,
-                fontSize = 13.sp,
-                color = color,
-                fontWeight = FontWeight.Bold
-            )
+            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(24.dp))
+            Text(text, fontSize = 13.sp, color = color, fontWeight = FontWeight.Bold)
         }
     }
 }
 
 @Composable
-private fun AdminActionCard(
-    title: String,
-    description: String,
-    icon: ImageVector,
-    onClick: () -> Unit
-) {
+private fun AdminActionCard(title: String, description: String, icon: ImageVector, onClick: () -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -377,39 +325,19 @@ private fun AdminActionCard(
                     modifier = Modifier.size(56.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            icon,
-                            contentDescription = null,
-                            tint = Color(0xFFFF0055),
-                            modifier = Modifier.size(28.dp)
-                        )
+                        Icon(icon, contentDescription = null, tint = Color(0xFFFF0055), modifier = Modifier.size(28.dp))
                     }
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        title,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White,
-                        letterSpacing = 0.5.sp
-                    )
+                    Text(title, fontSize = 14.sp, fontWeight = FontWeight.Black, color = Color.White, letterSpacing = 0.5.sp)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        description,
-                        fontSize = 11.sp,
-                        color = Color(0xFF888888)
-                    )
+                    Text(description, fontSize = 11.sp, color = Color(0xFF888888))
                 }
 
-                Icon(
-                    Icons.Default.ChevronRight,
-                    contentDescription = null,
-                    tint = Color(0xFFFF0055).copy(alpha = 0.6f),
-                    modifier = Modifier.size(24.dp)
-                )
+                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color(0xFFFF0055).copy(alpha = 0.6f), modifier = Modifier.size(24.dp))
             }
         }
     }
