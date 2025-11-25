@@ -27,7 +27,7 @@ fun ProductoCard(
     ) {
         Column {
             ProductoImage(
-                imageUrl = producto.imagen,
+                imageId = producto.imagen,
                 isDeseado = isDeseado,
                 onToggleDeseado = onAddToDeseados
             )

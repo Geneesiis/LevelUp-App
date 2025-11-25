@@ -369,7 +369,7 @@ private fun ProductoAdminCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Imagen
-                if (producto.imagen.isNotEmpty()) {
+                if (producto.imagen != 0) {
                     AsyncImage(
                         model = producto.imagen,
                         contentDescription = null,

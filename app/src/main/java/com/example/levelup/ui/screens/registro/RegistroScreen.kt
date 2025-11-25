@@ -47,6 +47,9 @@ fun RegistroScreen(
                 Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
                 authViewModel.clearError()
             }
+            is AuthState.Unauthenticated -> {
+
+            }
             else -> Unit
         }
     }

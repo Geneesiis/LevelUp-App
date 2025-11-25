@@ -1,69 +1,65 @@
 package com.example.levelup.repository
 
 import com.example.levelup.data.local.UserDao
+import com.example.levelup.data.session.SessionManager
 import com.example.levelup.model.User
 
-class AuthRepository(private val userDao: UserDao) {
-
-    // Obtener usuario actual (desde SharedPreferences o variable en memoria)
-    private var usuarioActualId: String? = null
+class AuthRepository(
+    private val userDao: UserDao,
+    private val sessionManager: SessionManager
+) {
 
     suspend fun getUsuarioActual(): User? {
-        return usuarioActualId?.let { userDao.getUserById(it) }
+        val userId = sessionManager.getUserId()
+        return userId?.let { userDao.getUserById(it) }
     }
 
-    // Login usando Room
     suspend fun login(correo: String, clave: String): User {
-        // Buscar usuario por correo
         val usuario = userDao.getUserByEmail(correo)
             ?: throw Exception("El correo no está registrado")
 
-        // Verificar contraseña (en producción deberías usar hash)
         if (usuario.password != clave) {
             throw Exception("Contraseña incorrecta")
         }
 
-        // Guardar ID del usuario actual
-        usuarioActualId = usuario.id
+        sessionManager.saveSession(usuario)
 
         return usuario
     }
 
-    // Registro de nuevo usuario en Room
     suspend fun registro(nombre: String, correo: String, clave: String): User {
-        // Verificar si el correo ya existe
         val existente = userDao.getUserByEmail(correo)
         if (existente != null) {
             throw Exception("Este correo ya está registrado")
         }
 
-        // Validar contraseña
         if (clave.length < 6) {
             throw Exception("La contraseña debe tener al menos 6 caracteres")
         }
 
-        // Crear nuevo usuario
+        val esAdmin = correo.equals("admin@levelup.com", ignoreCase = true)
+
         val nuevoUsuario = User(
             id = java.util.UUID.randomUUID().toString(),
             email = correo,
             nombre = nombre,
             password = clave, // En producción deberías usar hash
-            isAdmin = false
+            isAdmin = esAdmin
         )
 
-        // Insertar en Room
         userDao.insert(nuevoUsuario)
+
+        // Iniciar sesión después del registro
+        sessionManager.saveSession(nuevoUsuario)
 
         return nuevoUsuario
     }
 
-    // Cerrar sesión
     fun logout() {
-        usuarioActualId = null
+        sessionManager.clearSession()
     }
 
-    // Verificar si hay usuario autenticado
     fun isUserLoggedIn(): Boolean {
-        return usuarioActualId != null
+        return sessionManager.isLoggedIn()
     }
 }

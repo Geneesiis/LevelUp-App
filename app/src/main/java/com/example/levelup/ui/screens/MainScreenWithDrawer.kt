@@ -1,7 +1,11 @@
 package com.example.levelup.ui.screens
 
+import android.app.Activity
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -24,6 +28,8 @@ fun MainScreenWithDrawer(
     nombreUsuario: String = "Cliente",
     onLogout: () -> Unit = {},
     onNavigateToDetail: (String) -> Unit,
+    isAdmin: Boolean,
+    onCleanDatabase: () -> Unit,
     navController: NavHostController = rememberNavController()
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -33,6 +39,20 @@ fun MainScreenWithDrawer(
 
     val carrito by viewModel.carrito.collectAsState()
     val deseados by viewModel.deseados.collectAsState()
+
+    // Control status bar color
+    val view = LocalView.current
+    val window = (view.context as? Activity)?.window
+    val newColor = Color(0xFF00FFAA)
+
+    LaunchedEffect(drawerState.isOpen) {
+        if (drawerState.isOpen) {
+            window?.statusBarColor = newColor.toArgb()
+        } else {
+            // Revert to transparent when drawer is closed for edge-to-edge
+            window?.statusBarColor = Color.Transparent.toArgb()
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -45,7 +65,9 @@ fun MainScreenWithDrawer(
                 onNavigateToPerfil = { scope.launch { navController.navigate("perfil"); drawerState.close() } },
                 onNavigateToHistorial = { scope.launch { navController.navigate("historial"); drawerState.close() } },
                 carritoCount = carrito.size,
-                deseadosCount = deseados.size
+                deseadosCount = deseados.size,
+                isAdmin = isAdmin,
+                onCleanDatabase = onCleanDatabase
             )
         }
     ) {

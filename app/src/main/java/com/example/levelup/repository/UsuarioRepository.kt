@@ -58,4 +58,8 @@ class UsuarioRepository(private val userDao: UserDao) {
             throw Exception("Error al eliminar usuario: ${e.message}")
         }
     }
+
+    suspend fun borrarTodosLosUsuarios() {
+        userDao.deleteAllUsers()
+    }
 }

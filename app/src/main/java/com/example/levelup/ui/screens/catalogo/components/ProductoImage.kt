@@ -19,7 +19,7 @@ import coil.compose.AsyncImage
 
 @Composable
 fun ProductoImage(
-    imageUrl: String,
+    imageId: Int,
     isDeseado: Boolean,
     onToggleDeseado: () -> Unit
 ) {
@@ -29,7 +29,7 @@ fun ProductoImage(
             .fillMaxWidth()
     ) {
         AsyncImage(
-            model = imageUrl,
+            model = imageId,
             contentDescription = "Imagen del producto",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()

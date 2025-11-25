@@ -6,7 +6,7 @@ object GamingColors {
     // Colores principales
     val Primary = Color(0xFF00FFAA)
     val Secondary = Color(0xFF00AAFF)
-    val Tertiary = Color(0xFFAA00FF)
+    val Tertiary = Color(0xFF00FFAA)
 
     // Colores de estado
     val Error = Color(0xFFFF0055)

@@ -593,7 +593,7 @@ private fun ProductoEnPedido(item: com.example.levelup.model.ItemCarrito) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Imagen
-        if (item.producto.imagen.isNotEmpty()) {
+        if (item.producto.imagen != 0) {
             AsyncImage(
                 model = item.producto.imagen,
                 contentDescription = item.producto.nombre,

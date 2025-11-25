@@ -45,6 +45,7 @@ fun AppNavegacion(container: AppContainer) {
     val carritoViewModel: CarritoViewModel = viewModel(factory = factory)
 
     val authState by authViewModel.authState.collectAsState()
+    val isAdmin by authViewModel.isAdmin.collectAsState()
 
     NavHost(navController = navController, startDestination = "splash") {
         composable("splash") {
@@ -88,9 +89,13 @@ fun AppNavegacion(container: AppContainer) {
             MainScreenWithDrawer(
                 viewModel = carritoViewModel,
                 nombreUsuario = nombre,
+                isAdmin = isAdmin,
                 onLogout = {
                     authViewModel.logout()
                     navController.navigate("login") { popUpTo(0) }
+                },
+                onCleanDatabase = {
+                    authViewModel.cleanDatabase()
                 },
                 onNavigateToDetail = { productoId ->
                     navController.navigate("detalle_producto/$productoId")

@@ -144,6 +144,18 @@ class CarritoViewModel(
                     )
                 }
 
+            // --- INICIO DE LA MODIFICACIÓN ---
+            // Actualizar el stock de cada producto
+            itemsParaPedido.forEach { item ->
+                val producto = item.producto
+                val cantidadComprada = item.cantidad
+                val nuevoStock = producto.stock - cantidadComprada
+                if (nuevoStock >= 0) { // Asegurarse de no tener stock negativo
+                    actualizarStockProducto(producto.id, nuevoStock)
+                }
+            }
+            // --- FIN DE LA MODIFICACIÓN ---
+
             val nuevoPedido = Pedido(
                 id = "",
                 clienteId = usuarioId,
@@ -157,6 +169,7 @@ class CarritoViewModel(
             vaciarCarrito()
         }
     }
+
 
     fun actualizarEstadoPedido(pedidoId: String, nuevoEstado: String) {
         viewModelScope.launch {

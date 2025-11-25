@@ -213,8 +213,8 @@ fun CarritoScreen(
                             // Botón confirmar compra
                             Button(
                                 onClick = {
-                                    viewModel.realizarPedido(usuarioId)
-                                    onConfirmarPago()
+                                    viewModel.realizarPedido(usuarioId) // <-- LÍNEA AÑADIDA
+                                    onConfirmarPago() // Mantiene la navegación
                                 },
                                 modifier = Modifier.weight(1.5f),
                                 colors = ButtonDefaults.buttonColors(
