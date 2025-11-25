@@ -26,6 +26,10 @@ fun CatalogoScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val deseados by viewModel.deseados.collectAsState()
 
+    LaunchedEffect(Unit) {
+        viewModel.cargarProductosDesdeApi()
+    }
+
     Scaffold(
         topBar = {
             CatalogoHeader(

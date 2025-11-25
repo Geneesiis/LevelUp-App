@@ -10,7 +10,7 @@ data class Producto(
     val nombre: String = "",
     val descripcion: String = "",
     val precio: Double = 0.0,
-    val imagen: Int = 0,
+    val imagen: String = "",
     val categoria: String = "",
     val stock: Int = 0
 )

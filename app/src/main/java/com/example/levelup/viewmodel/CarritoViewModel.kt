@@ -207,4 +207,15 @@ class CarritoViewModel(
             pedidoRepository.updateEstadoPedido(pedidoId, EstadoPedido.CANCELADO.name)
         }
     }
+
+    fun cargarProductosDesdeApi() {
+        viewModelScope.launch {
+            try {
+                productoRepository.sincronizarProductosDesdeApi()
+            } catch (e: Exception) {
+                // Manejar error si lo deseas
+                println("Error al cargar productos: ${e.message}")
+            }
+        }
+    }
 }
