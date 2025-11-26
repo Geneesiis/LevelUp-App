@@ -18,7 +18,7 @@ fun ProductoApi.toProducto(): Producto {
         nombre = this.title,
         descripcion = this.description,
         precio = this.price,
-        imagen = this.image,
+        imagen = this.image, // Se ignora la imagen de la API y se pone un valor por defecto
         categoria = this.category,
         stock = 100 // Stock por defecto ya que la API no lo proporciona
     )
