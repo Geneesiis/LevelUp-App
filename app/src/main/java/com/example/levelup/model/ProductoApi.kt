@@ -20,6 +20,6 @@ fun ProductoApi.toProducto(): Producto {
         precio = this.price,
         imagen = this.image,
         categoria = this.category,
-        stock = 10 // Stock por defecto ya que la API no lo proporciona
+        stock = 100 // Stock por defecto ya que la API no lo proporciona
     )
 }

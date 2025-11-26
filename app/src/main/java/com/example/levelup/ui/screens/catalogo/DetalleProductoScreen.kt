@@ -143,7 +143,7 @@ fun DetalleProductoScreen(
                     ),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (producto.imagen != 0) {
+                    if (producto.imagen.isNotEmpty()) {
                         AsyncImage(
                             model = producto.imagen,
                             contentDescription = producto.nombre,
