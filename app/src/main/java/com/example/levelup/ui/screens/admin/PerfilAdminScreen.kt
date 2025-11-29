@@ -26,7 +26,7 @@ import com.example.levelup.viewmodel.CarritoViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilAdminScreen(
-    viewModel: CarritoViewModel, // Añadido para que coincida con Navegacion.kt
+    viewModel: CarritoViewModel,
     nombre: String,
     onLogout: () -> Unit,
     onNavigateToProductos: () -> Unit,
@@ -96,7 +96,9 @@ fun PerfilAdminScreen(
                         )
                     ) {
                         Column(
-                            modifier = Modifier.padding(20.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Surface(
@@ -123,6 +125,8 @@ fun PerfilAdminScreen(
                                 color = Color.White,
                                 letterSpacing = 2.sp
                             )
+
+                            Spacer(modifier = Modifier.height(4.dp))
 
                             Text(
                                 "ADMINISTRADOR",
