@@ -54,7 +54,10 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             excludes += "/META-INF/LICENSE.md"
+            excludes += "META-INF/licenses/ASM"
             excludes += "/META-INF/LICENSE-notice.md"
+            excludes += "win32-x86-64/attach_hotspot_windows.dll"
+            excludes += "win32-x86/attach_hotspot_windows.dll"
         }
     }
 
@@ -123,9 +126,6 @@ dependencies {
 
     // JUnit 5 (Base)
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
-
-    // Compose UI Test for JUnit5
-    testImplementation("androidx.compose.ui:ui-test-junit5:1.7.8")
 
     // Kotest (estilo BDD para lógica de negocio)
     testImplementation("io.kotest:kotest-runner-junit5:5.8.0")
