@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.levelup.model.Producto
-import com.example.levelup.ui.screens.catalogo.utils.FormatUtils.formatPrecioCLP
+import com.example.levelup.utils.formatPrecioCLP
 import com.example.levelup.viewmodel.CarritoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

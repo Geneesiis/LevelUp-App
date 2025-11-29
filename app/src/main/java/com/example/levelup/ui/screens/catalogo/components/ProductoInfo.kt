@@ -11,8 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import java.text.NumberFormat
-import java.util.*
+import com.example.levelup.utils.formatPrecioCLP
 
 @Composable
 fun ProductoInfo(nombre: String, precio: Double) {
@@ -31,10 +30,4 @@ fun ProductoInfo(nombre: String, precio: Double) {
             color = Color(0xFF00C853)
         )
     }
-}
-
-private fun formatPrecioCLP(precio: Double): String {
-    return NumberFormat.getCurrencyInstance(Locale("es", "CL")).apply {
-        maximumFractionDigits = 0
-    }.format(precio)
 }

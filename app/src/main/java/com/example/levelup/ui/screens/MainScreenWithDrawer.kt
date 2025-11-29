@@ -18,18 +18,20 @@ import com.example.levelup.ui.screens.deseados.DeseadosScreen
 import com.example.levelup.ui.screens.perfil.PerfilClienteScreen
 import com.example.levelup.ui.screens.historial.HistorialScreen
 import com.example.levelup.ui.screens.pago.PagoConfirmacionScreen
+import com.example.levelup.viewmodel.AuthState
+import com.example.levelup.viewmodel.AuthViewModel
 import com.example.levelup.viewmodel.CarritoViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreenWithDrawer(
-    viewModel: CarritoViewModel,
-    nombreUsuario: String = "Cliente",
+    authViewModel: AuthViewModel, // PASO 1: ACEPTAMOS EL VIEWMODEL
+    carritoViewModel: CarritoViewModel,
     onLogout: () -> Unit = {},
     onNavigateToDetail: (String) -> Unit,
-    isAdmin: Boolean,
     onCleanDatabase: () -> Unit,
+    onNavigateToEditProfile: () -> Unit,
     navController: NavHostController = rememberNavController()
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -37,8 +39,15 @@ fun MainScreenWithDrawer(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: "catalogo"
 
-    val carrito by viewModel.carrito.collectAsState()
-    val deseados by viewModel.deseados.collectAsState()
+    val carrito by carritoViewModel.carrito.collectAsState()
+    val deseados by carritoViewModel.deseados.collectAsState()
+
+    // PASO 2: OBSERVAMOS EL ESTADO DE AUTENTICACIÓN
+    val authState by authViewModel.authState.collectAsState()
+    val (nombreUsuario, esAdmin) = when (val state = authState) {
+        is AuthState.Authenticated -> state.user.nombre to state.user.isAdmin
+        else -> "Cliente" to false
+    }
 
     // Control status bar color
     val view = LocalView.current
@@ -66,7 +75,7 @@ fun MainScreenWithDrawer(
                 onNavigateToHistorial = { scope.launch { navController.navigate("historial"); drawerState.close() } },
                 carritoCount = carrito.size,
                 deseadosCount = deseados.size,
-                isAdmin = isAdmin,
+                isAdmin = esAdmin,
                 onCleanDatabase = onCleanDatabase
             )
         }
@@ -77,7 +86,7 @@ fun MainScreenWithDrawer(
         ) {
             composable("catalogo") {
                 CatalogoScreen(
-                    viewModel = viewModel,
+                    viewModel = carritoViewModel,
                     onProductoClick = { productoId -> onNavigateToDetail(productoId) },
                     onToggleDrawer = { scope.launch { if (drawerState.isClosed) drawerState.open() else drawerState.close() } }
                 )
@@ -85,7 +94,7 @@ fun MainScreenWithDrawer(
 
             composable("deseados") {
                 DeseadosScreen(
-                    viewModel = viewModel,
+                    viewModel = carritoViewModel,
                     navController = navController,
                     onVerCarrito = { scope.launch { navController.navigate("carrito") } },
                     onToggleDrawer = { scope.launch { if (drawerState.isClosed) drawerState.open() else drawerState.close() } }
@@ -94,8 +103,8 @@ fun MainScreenWithDrawer(
 
             composable("carrito") {
                 CarritoScreen(
-                    viewModel = viewModel,
-                    usuarioId = nombreUsuario,  // ← LÍNEA AGREGADA
+                    viewModel = carritoViewModel,
+                    usuarioId = nombreUsuario,
                     onVolverAlCatalogo = { navController.navigate("catalogo") { popUpTo("catalogo") { inclusive = false } } },
                     onConfirmarPago = { navController.navigate("pago") }
                 )
@@ -103,15 +112,18 @@ fun MainScreenWithDrawer(
 
             composable("perfil") {
                 PerfilClienteScreen(
-                    nombre = nombreUsuario,
+                    nombre = nombreUsuario, // PASO 3: USAMOS EL NOMBRE REACTIVO
                     onBack = { navController.popBackStack() },
-                    onLogout = onLogout
+                    onLogout = onLogout,
+                    onEditProfile = onNavigateToEditProfile,
+                    onMyOrders = { navController.navigate("historial") },
+                    onWishlist = { navController.navigate("deseados") }
                 )
             }
 
             composable("historial") {
                 HistorialScreen(
-                    viewModel = viewModel,
+                    viewModel = carritoViewModel,
                     onToggleDrawer = { scope.launch { if (drawerState.isClosed) drawerState.open() else drawerState.close() } },
                     onBack = { navController.popBackStack() }
                 )

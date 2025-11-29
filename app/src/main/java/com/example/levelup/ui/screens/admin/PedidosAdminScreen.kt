@@ -24,8 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.levelup.model.EstadoPedido
 import com.example.levelup.model.Pedido
+import com.example.levelup.utils.formatPrecioCLP
 import com.example.levelup.viewmodel.CarritoViewModel
-import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -208,10 +208,4 @@ private fun PedidoAdminCard(
             containerColor = Color(0xFF222222)
         )
     }
-}
-
-private fun formatPrecioCLP(precio: Double): String {
-    return NumberFormat.getCurrencyInstance(Locale("es", "CL")).apply {
-        maximumFractionDigits = 0
-    }.format(precio)
 }

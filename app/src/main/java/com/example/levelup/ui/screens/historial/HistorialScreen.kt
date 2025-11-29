@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.levelup.model.EstadoPedido
 import com.example.levelup.model.Pedido
+import com.example.levelup.utils.formatPrecioCLP
 import com.example.levelup.viewmodel.CarritoViewModel
 import java.text.NumberFormat
 import java.util.*
@@ -658,9 +659,4 @@ private fun ProductoEnPedido(item: com.example.levelup.model.ItemCarrito) {
             color = Color(0xFF00FFAA)
         )
     }
-}
-
-private fun formatPrecioCLP(precio: Double): String {
-    val formatter = NumberFormat.getNumberInstance(Locale("es", "CL"))
-    return "$${formatter.format(precio)}"
 }

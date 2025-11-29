@@ -19,11 +19,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.levelup.di.AppContainer
 import com.example.levelup.ui.screens.MainScreenWithDrawer
+import com.example.levelup.ui.screens.admin.EditarProductoScreen
 import com.example.levelup.ui.screens.admin.PedidosAdminScreen
 import com.example.levelup.ui.screens.admin.PerfilAdminScreen
 import com.example.levelup.ui.screens.admin.ProductosAdminScreen
 import com.example.levelup.ui.screens.catalogo.DetalleProductoScreen
 import com.example.levelup.ui.screens.login.LoginScreen
+import com.example.levelup.ui.screens.perfil.PerfilEditarScreen
 import com.example.levelup.ui.screens.registro.RegistroScreen
 import com.example.levelup.ui.viewmodels.ViewModelFactory
 import com.example.levelup.viewmodel.AuthState
@@ -45,7 +47,6 @@ fun AppNavegacion(container: AppContainer) {
     val carritoViewModel: CarritoViewModel = viewModel(factory = factory)
 
     val authState by authViewModel.authState.collectAsState()
-    val isAdmin by authViewModel.isAdmin.collectAsState()
 
     NavHost(navController = navController, startDestination = "splash") {
         composable("splash") {
@@ -61,7 +62,7 @@ fun AppNavegacion(container: AppContainer) {
                 authViewModel = authViewModel,
                 onRegisterClick = { navController.navigate("register") },
                 onLoginSuccess = { user ->
-                    val route = if (user.isAdmin) "perfil_admin/${user.nombre}" else "main/${user.nombre}"
+                    val route = if (user.isAdmin) "perfil_admin/${user.nombre}" else "main"
                     navController.navigate(route) {
                         popUpTo("login") { inclusive = true }
                     }
@@ -73,7 +74,7 @@ fun AppNavegacion(container: AppContainer) {
             RegistroScreen(
                 authViewModel = authViewModel,
                 onBack = { navController.popBackStack() },
-                onRegisterSuccess = { user ->
+                onRegisterSuccess = {
                     navController.navigate("login") {
                         popUpTo("login") { inclusive = true }
                     }
@@ -81,15 +82,10 @@ fun AppNavegacion(container: AppContainer) {
             )
         }
 
-        composable(
-            "main/{nombre}",
-            arguments = listOf(navArgument("nombre") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val nombre = backStackEntry.arguments?.getString("nombre") ?: "Cliente"
+        composable("main") {
             MainScreenWithDrawer(
-                viewModel = carritoViewModel,
-                nombreUsuario = nombre,
-                isAdmin = isAdmin,
+                authViewModel = authViewModel,
+                carritoViewModel = carritoViewModel,
                 onLogout = {
                     authViewModel.logout()
                     navController.navigate("login") { popUpTo(0) }
@@ -99,7 +95,8 @@ fun AppNavegacion(container: AppContainer) {
                 },
                 onNavigateToDetail = { productoId ->
                     navController.navigate("detalle_producto/$productoId")
-                }
+                },
+                onNavigateToEditProfile = { navController.navigate("edit_profile") }
             )
         }
 
@@ -118,8 +115,6 @@ fun AppNavegacion(container: AppContainer) {
                     onBack = { navController.popBackStack() }
                 )
             } else {
-                // Si el producto no se encuentra (por ejemplo, al volver a esta pantalla
-                // después de un tiempo), simplemente volvemos atrás.
                 LaunchedEffect(Unit) {
                     navController.popBackStack()
                 }
@@ -145,14 +140,57 @@ fun AppNavegacion(container: AppContainer) {
 
         composable("admin_productos") {
             ProductosAdminScreen(
-                viewModel = carritoViewModel,
-                onBack = { navController.popBackStack() }
+                carritoViewModel = carritoViewModel,
+                navController = navController
             )
+        }
+
+        // RUTA NUEVA: Crear producto
+        composable("crear_producto") {
+            EditarProductoScreen(
+                viewModel = carritoViewModel,
+                productoId = "new",
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // RUTA EXISTENTE: Editar producto
+        composable(
+            "editar_producto/{productoId}",
+            arguments = listOf(navArgument("productoId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val productoId = backStackEntry.arguments?.getString("productoId")
+            if (productoId != null) {
+                EditarProductoScreen(
+                    viewModel = carritoViewModel,
+                    productoId = productoId,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            } else {
+                LaunchedEffect(Unit) {
+                    navController.popBackStack()
+                }
+            }
         }
 
         composable("admin_pedidos") {
             PedidosAdminScreen(
                 viewModel = carritoViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable("edit_profile") {
+            val userState by authViewModel.authState.collectAsState()
+            val user = (userState as? AuthState.Authenticated)?.user
+
+            PerfilEditarScreen(
+                nombreActual = user?.nombre ?: "",
+                emailActual = user?.email ?: "",
+                onGuardar = { nombre, email, contrasena ->
+                    authViewModel.updateUser(nombre, email, contrasena)
+                    navController.popBackStack()
+                },
                 onBack = { navController.popBackStack() }
             )
         }
@@ -171,18 +209,16 @@ fun SplashScreen(authState: AuthState, onNavigate: (String) -> Unit) {
             when (authState) {
                 is AuthState.Authenticated -> {
                     val user = authState.user
-                    val route = if (user.isAdmin) "perfil_admin/${user.nombre}" else "main/${user.nombre}"
+                    val route = if (user.isAdmin) "perfil_admin/${user.nombre}" else "main"
                     onNavigate(route)
                 }
                 is AuthState.Unauthenticated -> {
                     onNavigate("login")
                 }
                 is AuthState.Error -> {
-                    onNavigate("login") // O a una pantalla de error si prefieres
+                    onNavigate("login")
                 }
-                AuthState.Loading -> {
-                    // No hagas nada, solo muestra el indicador de carga
-                }
+                AuthState.Loading -> { /* Muestra indicador de carga */ }
             }
         }
         CircularProgressIndicator(color = Color(0xFF00FFAA))

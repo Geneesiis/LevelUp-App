@@ -69,6 +69,22 @@ class CarritoViewModel(
         _searchQuery.value = query
     }
 
+    suspend fun getProductoById(id: String): Producto? {
+        return productos.value.find { it.id == id }
+    }
+
+    fun insertarProducto(producto: Producto) {
+        viewModelScope.launch {
+            productoRepository.insertProducto(producto)
+        }
+    }
+
+    fun actualizarProducto(producto: Producto) {
+        viewModelScope.launch {
+            productoRepository.updateProducto(producto)
+        }
+    }
+
     // --- Funciones de Carrito ---
     fun agregarAlCarrito(producto: Producto) {
         _carrito.value = _carrito.value + producto
@@ -82,6 +98,12 @@ class CarritoViewModel(
         val index = _carrito.value.indexOfFirst { it.id == producto.id }
         if (index >= 0) {
             _carrito.value = _carrito.value.toMutableList().also { it.removeAt(index) }
+        }
+    }
+
+    fun eliminarProducto(producto: Producto) {
+        viewModelScope.launch {
+            productoRepository.deleteProducto(producto)
         }
     }
 

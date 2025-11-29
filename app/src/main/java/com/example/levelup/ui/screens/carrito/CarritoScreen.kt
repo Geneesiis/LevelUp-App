@@ -18,9 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.levelup.model.Producto
+import com.example.levelup.utils.formatPrecioCLP
 import com.example.levelup.viewmodel.CarritoViewModel
-import java.text.NumberFormat
-import java.util.*
 
 @Composable
 fun CarritoScreen(
@@ -332,10 +331,4 @@ fun ItemCarritoCard(
             }
         }
     }
-}
-
-// Función para formatear precios en formato CLP
-fun formatPrecioCLP(precio: Double): String {
-    val formatter = NumberFormat.getNumberInstance(Locale("es", "CL"))
-    return "$${formatter.format(precio)}"
 }

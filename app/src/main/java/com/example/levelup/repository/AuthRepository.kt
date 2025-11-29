@@ -62,4 +62,16 @@ class AuthRepository(
     fun isUserLoggedIn(): Boolean {
         return sessionManager.isLoggedIn()
     }
+
+    suspend fun actualizarContrasena(nuevaContrasena: String) {
+        if (nuevaContrasena.length < 6) {
+            throw Exception("La contraseña debe tener al menos 6 caracteres")
+        }
+
+        val usuarioActual = getUsuarioActual()
+            ?: throw Exception("No se pudo encontrar al usuario actual para actualizar la contraseña.")
+
+        val usuarioActualizado = usuarioActual.copy(password = nuevaContrasena)
+        userDao.update(usuarioActualizado)
+    }
 }

@@ -1,6 +1,7 @@
 package com.example.levelup.ui.screens.admin
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -23,68 +24,63 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.levelup.model.Producto
+import com.example.levelup.utils.formatPrecioCLP
 import com.example.levelup.viewmodel.CarritoViewModel
-import java.text.NumberFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductosAdminScreen(
-    viewModel: CarritoViewModel,
-    onBack: () -> Unit = {}
+    navController: NavController,
+    carritoViewModel: CarritoViewModel
 ) {
-    val productos by viewModel.productos.collectAsState()
+    val productos by carritoViewModel.productos.collectAsState(initial = emptyList())
     var searchQuery by remember { mutableStateOf("") }
-    var showEditDialog by remember { mutableStateOf<Producto?>(null) }
-
-    val infiniteTransition = rememberInfiniteTransition(label = "admin_glow")
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.8f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "glow"
-    )
 
     val productosFiltrados = remember(productos, searchQuery) {
         if (searchQuery.isBlank()) {
             productos
         } else {
             productos.filter {
-                it.nombre.contains(searchQuery, ignoreCase = true) ||
-                        it.descripcion.contains(searchQuery, ignoreCase = true)
+                it.nombre.contains(searchQuery, ignoreCase = true)
             }
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF000000),
-                        Color(0xFF0A0000),
-                        Color(0xFF000000)
-                    )
-                )
-            )
-    ) {
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color(0xFF0D0000),
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { navController.navigate("crear_producto") }, // ✅ CORREGIDO
+                containerColor = Color(0xFFFF0055),
+                contentColor = Color.White,
+                shape = CircleShape,
+                modifier = Modifier.border(2.dp, Color.White.copy(alpha = 0.2f), CircleShape)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Agregar Producto")
+            }
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(
-                    top = 50.dp,
-                    start = 16.dp,
-                    end = 16.dp,
-                    bottom = 16.dp
-                )
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
         ) {
-            // Header
+            Spacer(modifier = Modifier.height(16.dp))
+            var startGlow by remember { mutableStateOf(false) }
+            val glowAlpha by animateFloatAsState(
+                targetValue = if (startGlow) 0.6f else 0.3f,
+                animationSpec = tween(durationMillis = 1500), label = ""
+            )
+
+            LaunchedEffect(Unit) {
+                startGlow = true
+            }
+
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -119,7 +115,7 @@ fun ProductosAdminScreen(
                                 modifier = Modifier.size(40.dp),
                                 shape = CircleShape,
                                 color = Color(0xFF1A0000),
-                                onClick = onBack
+                                onClick = { navController.popBackStack() }
                             ) {
                                 Box(
                                     contentAlignment = Alignment.Center,
@@ -152,7 +148,6 @@ fun ProductosAdminScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Stats y buscador
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -187,7 +182,6 @@ fun ProductosAdminScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Buscador
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
@@ -218,7 +212,6 @@ fun ProductosAdminScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Lista de productos
             if (productosFiltrados.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -244,66 +237,19 @@ fun ProductosAdminScreen(
             } else {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(vertical = 8.dp)
+                    contentPadding = PaddingValues(bottom = 80.dp)
                 ) {
                     items(productosFiltrados, key = { it.id }) { producto ->
                         ProductoAdminCard(
                             producto = producto,
-                            onEdit = { showEditDialog = producto }
+                            onEdit = {
+                                navController.navigate("editar_producto/${producto.id}")
+                            }
                         )
                     }
                 }
             }
         }
-    }
-
-    // Dialog para editar stock
-    showEditDialog?.let { producto ->
-        var nuevoStock by remember { mutableStateOf(producto.stock.toString()) }
-
-        AlertDialog(
-            onDismissRequest = { showEditDialog = null },
-            title = { Text("Editar Stock", color = Color.White) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        producto.nombre,
-                        color = Color(0xFF888888),
-                        fontSize = 14.sp
-                    )
-                    OutlinedTextField(
-                        value = nuevoStock,
-                        onValueChange = { nuevoStock = it.filter { char -> char.isDigit() } },
-                        label = { Text("Stock", color = Color(0xFF888888)) },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedBorderColor = Color(0xFFFF0055),
-                            unfocusedBorderColor = Color(0xFF666666),
-                            cursorColor = Color(0xFFFF0055)
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val stockInt = nuevoStock.toIntOrNull() ?: 0
-                        viewModel.actualizarStockProducto(producto.id, stockInt)
-                        showEditDialog = null
-                    }
-                ) {
-                    Text("Guardar", color = Color(0xFFFF0055))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showEditDialog = null }) {
-                    Text("Cancelar", color = Color(0xFF888888))
-                }
-            },
-            containerColor = Color(0xFF0D0000)
-        )
     }
 }
 
@@ -343,6 +289,7 @@ private fun StatChip(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ProductoAdminCard(
     producto: Producto,
@@ -353,7 +300,8 @@ private fun ProductoAdminCard(
             .fillMaxWidth()
             .shadow(8.dp, RoundedCornerShape(14.dp)),
         shape = RoundedCornerShape(14.dp),
-        color = Color(0xFF0D0000)
+        color = Color(0xFF0D0000),
+        onClick = onEdit
     ) {
         Box(
             modifier = Modifier.border(
@@ -368,7 +316,6 @@ private fun ProductoAdminCard(
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Imagen
                 if (producto.imagen.isNotEmpty()) {
                     AsyncImage(
                         model = producto.imagen,
@@ -398,7 +345,6 @@ private fun ProductoAdminCard(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                // Info
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         producto.nombre,
@@ -413,59 +359,10 @@ private fun ProductoAdminCard(
                         formatPrecioCLP(producto.precio),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Black,
-                        color = Color(0xFFFF0055)
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        StockBadge(producto.stock)
-                        Text(
-                            "Stock: ${producto.stock}",
-                            fontSize = 11.sp,
-                            color = Color(0xFF888888)
-                        )
-                    }
-                }
-
-                // Botón editar
-                IconButton(onClick = onEdit) {
-                    Icon(
-                        Icons.Default.Edit,
-                        "Editar stock",
-                        tint = Color(0xFFFF0055),
-                        modifier = Modifier.size(24.dp)
+                        color = Color.White
                     )
                 }
             }
         }
     }
-}
-
-@Composable
-private fun StockBadge(stock: Int) {
-    val (color, text) = when {
-        stock == 0 -> Color(0xFFFF0055) to "AGOTADO"
-        stock <= 5 -> Color(0xFFFFAA00) to "BAJO"
-        else -> Color(0xFF00FF00) to "OK"
-    }
-
-    Surface(
-        shape = RoundedCornerShape(4.dp),
-        color = color.copy(alpha = 0.2f)
-    ) {
-        Text(
-            text,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-            fontSize = 9.sp,
-            fontWeight = FontWeight.Black,
-            color = color,
-            letterSpacing = 1.sp
-        )
-    }
-}
-
-private fun formatPrecioCLP(precio: Double): String {
-    val formatter = NumberFormat.getNumberInstance(Locale("es", "CL"))
-    return "$${formatter.format(precio)}"
 }
