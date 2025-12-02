@@ -50,6 +50,22 @@ android {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
 
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+            isIncludeAndroidResources = true
+            all {
+                it.useJUnitPlatform()
+            }
+        }
+        animationsDisabled = true
+
+        // Optimizaciones para tests más rápidos
+        unitTests.all {
+            it.maxParallelForks = Runtime.getRuntime().availableProcessors()
+        }
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -60,19 +76,6 @@ android {
             excludes += "win32-x86/attach_hotspot_windows.dll"
         }
     }
-
-    testOptions {
-        unitTests {
-            isReturnDefaultValues = true
-            isIncludeAndroidResources = true
-            // ✅ Configurar JUnit5 para Unit Tests
-            all {
-                it.useJUnitPlatform()
-            }
-        }
-        // ✅ Deshabilitar animaciones para tests más estables
-        animationsDisabled = true
-    }
 }
 
 dependencies {
@@ -82,6 +85,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+
+    // Compose BOM - gestión centralizada de versiones
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
@@ -121,54 +126,42 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     // ===========================================
-    // TESTING - Unit Tests (test/)
+    // TESTING - Unit Tests (test/) - JUnit5 + Kotest
     // ===========================================
-
-    // JUnit 5 (Base)
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
-
-    // Kotest (estilo BDD para lógica de negocio)
     testImplementation("io.kotest:kotest-runner-junit5:5.8.0")
     testImplementation("io.kotest:kotest-assertions-core:5.8.0")
-
-    // MockK (Mocking para Kotlin)
     testImplementation("io.mockk:mockk:1.13.8")
-
-    // Coroutines Test (para testear asincronía)
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 
     // ===========================================
-    // TESTING - UI Tests (androidTest/)
+    // TESTING - UI Tests (androidTest/) - JUnit4
     // ===========================================
 
-    // JUnit 4 (necesario para ComposeTestRule)
-    androidTestImplementation("junit:junit:4.13.2")
+    // Core testing
+    androidTestImplementation("androidx.test:core-ktx:1.5.0")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("androidx.test:rules:1.5.0")
+    androidTestImplementation("androidx.test.ext:junit-ktx:1.1.5")
 
-    // JUnit para Android
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-
-    // Compose UI Test
+    // Compose Testing - usar el MISMO BOM que implementation
     androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.7.8")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.7.8")
-    debugImplementation("androidx.compose.ui:ui-tooling:1.7.8")
-
-    // Navigation Testing
-    androidTestImplementation("androidx.navigation:navigation-testing:2.7.6")
-
-    // Kotest para AndroidTest
-    androidTestImplementation("io.kotest:kotest-runner-junit5:5.8.0")
-    androidTestImplementation("io.kotest:kotest-assertions-core:5.8.0")
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 
     // MockK para AndroidTest
     androidTestImplementation("io.mockk:mockk-android:1.13.8")
 
-    // Coroutines Test para AndroidTest
+    // Coroutines Test
     androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+
+    // ===========================================
+    // DEBUG IMPLEMENTATIONS
+    // ===========================================
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
 
-// ✅ Configurar JUnit 5 para Unit Tests
+// Solo para Unit Tests (carpeta test/)
 tasks.withType<Test> {
     useJUnitPlatform()
 }

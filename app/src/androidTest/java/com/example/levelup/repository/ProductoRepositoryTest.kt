@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.*
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -57,13 +56,13 @@ class ProductoRepositoryTest {
     }
 
     @Test
-    fun `getProductos debería retornar un Flow con la lista de productos del DAO`() = runTest {
+    fun getProductos_deberiaRetornarFlowConListaDeProductosDelDAO() = runTest {
         // Given
         val productosEsperados = listOf(
             Producto(id = "1", nombre = "PlayStation 5", precio = 499990.0, imagen = "", stock = 10, categoria = "Consolas", descripcion = ""),
             Producto(id = "2", nombre = "Xbox Series X", precio = 499990.0, imagen = "", stock = 5, categoria = "Consolas", descripcion = "")
         )
-        coEvery { productoDao.getAllProductos() } returns flowOf(productosEsperados)
+        every { productoDao.getAllProductos() } returns flowOf(productosEsperados)
 
         // When
         val resultado = repository.getProductos().first()
@@ -75,7 +74,7 @@ class ProductoRepositoryTest {
     }
 
     @Test
-    fun `sincronizarProductosDesdeApi debería obtener productos de la API y guardarlos en Room`() = runTest {
+    fun sincronizarProductosDesdeApi_deberiaObtenerProductosDeLaApiYGuardarlosEnRoom() = runTest {
         // Given
         val productosApi = listOf(
             ProductoApi(id = 1, title = "Producto 1", price = 10.0, description = "", category = "electronics", image = ""),
@@ -92,7 +91,7 @@ class ProductoRepositoryTest {
     }
     
     @Test(expected = Exception::class)
-    fun `sincronizarProductosDesdeApi debería lanzar una excepción si la API falla`() = runTest {
+    fun sincronizarProductosDesdeApi_deberiaLanzarExcepcionSiLaApiFalla() = runTest {
         // Given
         val errorMessage = "Network error"
         coEvery { mockApiService.getProductosElectronics() } throws Exception(errorMessage)
@@ -104,7 +103,7 @@ class ProductoRepositoryTest {
     }
 
     @Test
-    fun `refrescarProductos debería borrar la BD y cargar desde la API`() = runTest {
+    fun refrescarProductos_deberiaBorrarBDYCargarDesdeApi() = runTest {
         // Given
         val productosApi = listOf(
             ProductoApi(id = 1, title = "Nuevo Producto", price = 99.0, description = "", category = "electronics", image = "")
@@ -123,7 +122,7 @@ class ProductoRepositoryTest {
     }
 
     @Test
-    fun `getProductoById debería retornar el producto correcto del DAO`() = runTest {
+    fun getProductoById_deberiaRetornarElProductoCorrectoDelDAO() = runTest {
         // Given
         val productoEsperado = Producto(id = "1", nombre = "PlayStation 5", precio = 499990.0, imagen = "", stock = 10, categoria = "Consolas", descripcion = "")
         coEvery { productoDao.getProductoById("1") } returns productoEsperado
@@ -138,7 +137,7 @@ class ProductoRepositoryTest {
     }
 
     @Test
-    fun `actualizarStock debería llamar al DAO con los parámetros correctos`() = runTest {
+    fun actualizarStock_deberiaLlamarAlDAOConLosParametrosCorrectos() = runTest {
         // Given
         val productoId = "1"
         val nuevoStock = 20

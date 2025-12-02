@@ -6,8 +6,8 @@ import com.example.levelup.model.EstadoPedido
 import com.example.levelup.model.ItemCarrito
 import com.example.levelup.model.Pedido
 import com.example.levelup.model.Producto
-import com.example.levelup.repository.PedidoRepository
-import com.example.levelup.repository.ProductoRepository
+import com.example.levelup.repository.IPedidoRepository
+import com.example.levelup.repository.IProductoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,8 +18,8 @@ import kotlinx.coroutines.launch
 import java.util.Date
 
 class CarritoViewModel(
-    private val productoRepository: ProductoRepository,
-    private val pedidoRepository: PedidoRepository
+    private val productoRepository: IProductoRepository,
+    private val pedidoRepository: IPedidoRepository
 ) : ViewModel() {
 
     // --- BÚSQUEDA ---

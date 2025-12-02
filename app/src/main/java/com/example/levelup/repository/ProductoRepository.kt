@@ -6,13 +6,13 @@ import com.example.levelup.model.Producto
 import com.example.levelup.model.toProducto
 import kotlinx.coroutines.flow.Flow
 
-class ProductoRepository(private val productoDao: ProductoDao) {
+class ProductoRepository(private val productoDao: ProductoDao) : IProductoRepository {
 
-    fun getProductos(): Flow<List<Producto>> {
+    override fun getProductos(): Flow<List<Producto>> {
         return productoDao.getAllProductos()
     }
 
-    suspend fun sincronizarProductosDesdeApi() {
+    override suspend fun sincronizarProductosDesdeApi() {
         try {
             // Obtener productos de la API
             val productosApi = RetrofitInstance.api.getProductosElectronics()
@@ -43,19 +43,19 @@ class ProductoRepository(private val productoDao: ProductoDao) {
         return productoDao.getProductoById(id)
     }
 
-    suspend fun insertProducto(producto: Producto) {
+    override suspend fun insertProducto(producto: Producto) {
         productoDao.insert(producto)
     }
 
-    suspend fun updateProducto(producto: Producto) {
+    override suspend fun updateProducto(producto: Producto) {
         productoDao.update(producto)
     }
 
-    suspend fun deleteProducto(producto: Producto) {
+    override suspend fun deleteProducto(producto: Producto) {
         productoDao.delete(producto)
     }
 
-    suspend fun actualizarStock(productoId: String, nuevoStock: Int) {
+    override suspend fun actualizarStock(productoId: String, nuevoStock: Int) {
         productoDao.updateStock(productoId, nuevoStock)
     }
 

@@ -1,4 +1,3 @@
-
 package com.example.levelup.ui.screens.catalogo
 
 import androidx.compose.animation.core.*
@@ -20,6 +19,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -317,7 +317,8 @@ fun DetalleProductoScreen(
                     onClick = { viewModel.agregarAlCarrito(producto) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(60.dp),
+                        .height(60.dp)
+                        .testTag("boton_agregar"),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF00FFAA),
                         contentColor = Color.Black,
