@@ -10,14 +10,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-/**
- * Tests de UI para DetalleProductoScreen usando Compose Testing.
- *
- * Estos tests verifican:
- * - Navegación (botón volver)
- * - Visualización correcta de datos del producto
- * - Estado de disponibilidad (con stock / sin stock)
- */
 class DetalleProductoScreenTest {
 
     @get:Rule

@@ -5,7 +5,6 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 
 @Entity(tableName = "pedidos")
 @TypeConverters(Converters::class)
@@ -19,7 +18,7 @@ data class Pedido(
     val estado: EstadoPedido = EstadoPedido.PENDIENTE
 ) {
     fun getFechaFormateada(): String {
-        val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale("es", "CL"))
+        val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale("es", "CL"))
         return formatter.format(fecha)
     }
 

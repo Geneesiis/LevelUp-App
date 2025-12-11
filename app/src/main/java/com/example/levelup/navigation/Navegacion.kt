@@ -31,6 +31,10 @@ import com.example.levelup.ui.viewmodels.ViewModelFactory
 import com.example.levelup.viewmodel.AuthState
 import com.example.levelup.viewmodel.AuthViewModel
 import com.example.levelup.viewmodel.CarritoViewModel
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.flow.first
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.withTimeout
 
 @Composable
 fun AppNavegacion(container: AppContainer) {
@@ -205,20 +209,25 @@ fun SplashScreen(authState: AuthState, onNavigate: (String) -> Unit) {
             .background(Color.Black),
         contentAlignment = Alignment.Center
     ) {
-        LaunchedEffect(authState) {
-            when (authState) {
+        LaunchedEffect(Unit) {
+            val finalAuthState = try {
+                withTimeout(3000L) {
+                    snapshotFlow { authState }
+                        .first { it !is AuthState.Loading }
+                }
+            } catch (e: TimeoutCancellationException) {
+                AuthState.Unauthenticated
+            }
+
+            when (finalAuthState) {
                 is AuthState.Authenticated -> {
-                    val user = authState.user
+                    val user = finalAuthState.user
                     val route = if (user.isAdmin) "perfil_admin/${user.nombre}" else "main"
                     onNavigate(route)
                 }
-                is AuthState.Unauthenticated -> {
+                else -> {
                     onNavigate("login")
                 }
-                is AuthState.Error -> {
-                    onNavigate("login")
-                }
-                AuthState.Loading -> { /* Muestra indicador de carga */ }
             }
         }
         CircularProgressIndicator(color = Color(0xFF00FFAA))

@@ -55,23 +55,32 @@ class AuthRepository(
         return nuevoUsuario
     }
 
-    fun logout() {
+    suspend fun logout() {
         sessionManager.clearSession()
     }
 
-    fun isUserLoggedIn(): Boolean {
+    suspend fun isUserLoggedIn(): Boolean {
         return sessionManager.isLoggedIn()
     }
 
-    suspend fun actualizarContrasena(nuevaContrasena: String) {
-        if (nuevaContrasena.length < 6) {
-            throw Exception("La contraseña debe tener al menos 6 caracteres")
-        }
-
+    suspend fun updateUser(nombre: String, email: String, contrasena: String) {
         val usuarioActual = getUsuarioActual()
-            ?: throw Exception("No se pudo encontrar al usuario actual para actualizar la contraseña.")
+            ?: throw Exception("No se pudo encontrar al usuario actual para actualizar.")
 
-        val usuarioActualizado = usuarioActual.copy(password = nuevaContrasena)
+        val usuarioActualizado = usuarioActual.copy(
+            nombre = nombre,
+            email = email,
+            password = if (contrasena.isNotBlank()) {
+                if (contrasena.length < 6) throw Exception("La contraseña debe tener al menos 6 caracteres")
+                contrasena // En producción deberías usar hash
+            } else {
+                usuarioActual.password
+            }
+        )
         userDao.update(usuarioActualizado)
+    }
+
+    suspend fun cleanDatabase() {
+        userDao.deleteAllUsers()
     }
 }
