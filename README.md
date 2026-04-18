@@ -1,13 +1,12 @@
-# 🎮 LevelUp - Tienda de Videojuegos
+# LevelUp - Tienda de Videojuegos
 
-## 📱 Descripción
+## Descripción
 LevelUp es una aplicación móvil de comercio electrónico especializada en videojuegos, consolas y accesorios gaming. Desarrollada en Kotlin con Jetpack Compose, ofrece una experiencia de compra moderna y fluida.
 
-## 👥 Integrantes
+## Integrantes
 - **[Genesis Flores]** 
-- **[Juan Villagra]** 
 
-## ✨ Funcionalidades Principales
+## Funcionalidades Principales
 
 ### 1. Gestión de Productos
 - ✅ Catálogo completo de productos con filtros por categoría
@@ -33,7 +32,7 @@ LevelUp es una aplicación móvil de comercio electrónico especializada en vide
 - ✅ Detalles de cada orden
 - ✅ Estados de órdenes
 
-## 🌐 Endpoints Utilizados
+## Endpoints Utilizados
 
 ### API Externa - Fake Store API
 - **Base URL**: `https://fakestoreapi.com`
@@ -102,7 +101,7 @@ cd LevelUp
 ./gradlew connectedAndroidTest
 ```
 
-## 📦 APK Firmado
+## APK Firmado
 
 ### Ubicación de Archivos
 - **APK Firmado**: `/app/release/levelup-release.apk`
