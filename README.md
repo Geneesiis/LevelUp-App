@@ -71,7 +71,7 @@ com.example.levelup/
 
 1. **Clonar el repositorio**
 ```bash
-git clone https://dev.azure.com/gefloresm/_git/LevelUp?path=/README.md&version=GBmaster
+git clone https://github.com/Geneesiis/LevelUp-App.git
 cd LevelUp
 ```
 
@@ -101,14 +101,6 @@ cd LevelUp
 ./gradlew connectedAndroidTest
 ```
 
-## APK Firmado
-
-### Ubicación de Archivos
-- **APK Firmado**: `/app/release/levelup-release.apk`
-- **Keystore (.jks)**: `/keystore/levelup-keystore.jks`
-
-### Información del Keystore
-- **Alias**: levelup-key
-- **Validity**: 25 años
-- **Key Algorithm**: RSA
-- **Signature Algorithm**: SHA256withRSA
+![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)
+![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)
